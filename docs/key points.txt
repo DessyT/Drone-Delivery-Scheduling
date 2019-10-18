@@ -35,3 +35,6 @@ How to find if its working
    - Limitations
    - Issues
 
+
+For 21/10
+Worth explaining p = np, np-hard etc?
