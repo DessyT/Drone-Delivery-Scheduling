@@ -1,0 +1,37 @@
+I'm assuming that drone tech will evolve to the point of carrying multiple packages - traditional TSP without the use of roads. 
+TSP has been solved before - include drone parameters - maximum travel distance, maximum number of packages etc.
+Symmetric Traveling Salesman Problem
+Point of my software to provide user with a choice of which algorithm to use? Determine which will be best for cost, speed, best for customers, best for business?
+
+Provide a solution that:
+Solution that looks to the future. Current limitations and how good it can be. What is likely to exist soon.
+Shows current drone tech capabilities, ability for user to increase drone capability of battery life and maximum weight it can carry.
+Allow user to select what they want the solution optimised for. Speed? Cost?
+
+For Lit review:
+
+Drone Delivery
+   - What is it
+   - Why is it important
+   - What's been done
+   - Where can I improve
+
+   - Drone + Van seems to be current solution due to limitations of drones. Improving drone tech = my solution wins
+	Improvements = battery life + carry weight
+   - Prove drone tech improvement will enable TSP as a solution
+
+Scheduling Algorithms
+What are they
+Examples - pros and cons
+When do we need complete and optimal? Or is time to find route more important? How long to calculate perfect route?
+   - Travelling Salesperson
+	P = NP
+   - Local Search
+   - A*
+   - Genetic Algorithm
+
+How to find if its working
+   - Does it improve on other methods
+   - Limitations
+   - Issues
+
