@@ -38,3 +38,4 @@ How to find if its working
 
 For 21/10
 Worth explaining p = np, np-hard etc?
+How in depth to go with search types
