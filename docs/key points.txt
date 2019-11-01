@@ -41,3 +41,4 @@ Worth explaining p = np, np-hard etc?
 How in depth to go with search types
 papers/websites?
 
+Completely ignore drone limitations? Instead just allow users to see the effect of adding drones to network on speed?
