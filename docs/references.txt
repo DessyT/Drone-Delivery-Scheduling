@@ -1,0 +1,36 @@
+References
+Al-Betar, M. (2016). β-Hill climbing: an exploratory local search. Neural Computing and Applications, 28(S1), pp.153-168.
+
+Bruggeman, C., Liu, W., Mitchell, M. and You, E. (2010). Creating Clusters: An Analysis of Traveling Salesman as a Clustering Mechanism.
+
+Bryant, K. (2000). Genetic Algorithms and the Traveling Salesman Problem.
+
+Dorling, K., Heinrichs, J., Messier, G. and Magierowski, S. (2017). Vehicle Routing Problems for Drone Delivery. IEEE Transactions on Systems, Man, and Cybernetics: Systems, 47(1), pp.70-71.
+
+Freefly Systems. (2019). Freefly ALTA 8 Specifications - Dimensions, Weight & Payload. [online] Available at: https://freeflysystems.com/alta-8/specs [Accessed 6 Nov. 2019].
+
+Goetschalckx, M. (2011). Supply Chain Engineering. Boston, MA: Springer US, pp.229-240.
+
+Goodchild, A. and Toy, J. (2018). Delivery by drone: An evaluation of unmanned aerial vehicle technology in reducing CO 2 emissions in the delivery service industry. Transportation Research Part D: Transport and Environment, 61, p.66.
+
+Google Developers. (2019). Interpret Results and Adjust Clustering. [online] Available at: https://developers.google.com/machine-learning/clustering/interpret [Accessed 6 Nov. 2019].
+
+Google Developers. (2019). k-Means Advantages and Disadvantages  |  Clustering in Machine Learning. [online] Available at: https://developers.google.com/machine-learning/clustering/algorithm/advantages-disadvantages [Accessed 6 Nov. 2019].
+
+Guglielmo, C. (2013). Turns Out Amazon, Touting Drone Delivery, Does Sell Lots of Products That Weigh Less Than 5 Pounds. [online] Forbes.com. Available at: https://www.forbes.com/sites/connieguglielmo/2013/12/02/turns-out-amazon-touting-drone-delivery-does-sell-lots-of-products-that-weigh-less-than-5-pounds/#4a56fbe6455e [Accessed 6 Nov. 2019].
+
+Keeney, T. (2015). Drone Delivery: How Can Amazon Charge $1 for Drone Delivery?. [online] ARK Investment Management. Available at: https://ark-invest.com/research/drone-delivery-amazon [Accessed 6 Nov. 2019].
+
+Larrañaga, P., Kuijpers, C., Murga, R., Inza, I. and Dizdarevic, S. (1999). Genetic Algorithms for the Travelling Salesman Problem: A Review of Representations and Operators. Artificial Intelligence Review, 13(2), pp.129-133.
+
+Lee, H. (2016). TECHNOLOGICAL DISRUPTION AND INNOVATION IN LAST-MILE DELIVERY. [online] p.11. Available at: https://www.gsb.stanford.edu/sites/gsb/files/publication-pdf/vcii-publication-technological-disruption-innovation-last-mile-delivery.pdf [Accessed 6 Nov. 2019].
+
+McKinsey & Company (2016). Parcel delivery. The future of of last mile. [online] pp.9-9. Available at: https://www.mckinsey.com/~/media/mckinsey/industries/travel%20transport%20and%20logistics/our%20insights/how%20customer%20demands%20are%20reshaping%20last%20mile%20delivery/parcel_delivery_the_future_of_last_mile.ashx [Accessed 6 Nov. 2019].
+
+Nosrati, M., Karimi, R. and Hasanvand, H. (2012). Investigation of the * (Star) Search Algorithms: Characteristics, Methods and Approaches. World Applied Programming, p.251.
+
+Saiyed, A. (2012). The Traveling Salesman Problem. p.2.
+
+Tan, L., Tan, Y., Yun, G. and Wu, Y. (2016). Genetic Algorithms Based on Clustering for Traveling Salesman Problems. pp.103-107.
+
+Wilke, J. (2019). A drone program taking flight. [online] US Day One Blog. Available at: https://blog.aboutamazon.com/transportation/a-drone-program-taking-flight [Accessed 6 Nov. 2019].
