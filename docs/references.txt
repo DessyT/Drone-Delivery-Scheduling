@@ -1,4 +1,3 @@
-References
 Al-Betar, M. (2016). β-Hill climbing: an exploratory local search. Neural Computing and Applications, 28(S1), pp.153-168.
 
 Bruggeman, C., Liu, W., Mitchell, M. and You, E. (2010). Creating Clusters: An Analysis of Traveling Salesman as a Clustering Mechanism.
