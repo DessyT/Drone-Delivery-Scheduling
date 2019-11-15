@@ -24,15 +24,15 @@ for i in range(len(clusterCentreLocs)):
     clusters.append(cluster)
 
 print("Affinity Propagation")
-print("Locations")
+print("\nLocations")
 print(locs)
 
-print("Number of clusters: ", len(clusterCentreLocs))
+print("\nNumber of clusters: ", len(clusterCentreLocs))
 
-print("Central locations:")
+print("\nCentral nodes:")
 for i in clusterCentreLocs:
     print(locs[i])
 
-print("Clusters:")
+print("\nClusters:")
 for group in clusters:
     print(group)
