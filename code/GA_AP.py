@@ -10,7 +10,7 @@ import random
 import numpy as np
 
 #Sample map
-map = folium.Map(location = [57.151954, -2.091723], width=750, height=500, zoom_start=15)
+map = folium.Map(location = [57.151954, -2.091723], width=500, height=500, zoom_start=15)
 #Draws locations on map
 def addLine(startLat,startLon,endLat,endLon):
     folium.PolyLine(locations = [(startLat, startLon), (endLat, endLon)],
@@ -168,4 +168,4 @@ for locData in clusters:
 
             addLine(startLat,startLon,endLat,endLon)
 
-map.save("maps/my_map2.html")
+map.save("html/my_map2.html")

@@ -1,8 +1,13 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit
+import os
+
+from PyQt5.QtWidgets import *
+
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWebKit import QWebView
+from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5 import *
 
 def window():
    app = QApplication(sys.argv)
@@ -42,15 +47,14 @@ def window():
    txtNoDrones = QLineEdit(widget)
    txtNoDrones.move(650,110)
 
-   #For showing our HTML map
-   view = QWebView()
-   path = "/home/andrew/Documents/uni/project/Drone-Delivery-Scheduling/code/maps/my_map2.html"
-   local_url = QUrl.fromLocalFile(path)
-   view.load(local_url)
-   view.move(1,1)
-   view.show()
+   view = QtWebEngineWidgets.QWebEngineView(widget)
+   view.setGeometry(50,50,500,500)
 
-   widget.setGeometry(50,50,800,500)
+   view.load(QtCore.QUrl().fromLocalFile(
+       os.path.split(os.path.abspath(__file__))[0]+r'/html/my_map2.html'
+   ))
+
+   widget.setGeometry(50,50,800,800)
    widget.setWindowTitle("Delivery Scheduler")
    widget.show()
    sys.exit(app.exec_())
@@ -63,3 +67,36 @@ def btnAddClicked():
 
 if __name__ == '__main__':
    window()
+
+
+
+
+
+
+
+
+
+
+
+
+
+   #For showing our HTML map
+   '''
+   view = QWebView()
+   path = "/home/andrew/Documents/uni/project/Drone-Delivery-Scheduling/code/maps/my_map2.html"
+   local_url = QUrl.fromLocalFile(path)
+   view.load(local_url)
+   view.move(1,1)
+   view.show()
+   '''
+
+   #view = QtWebEngineWidgets.QWebEngineView()
+   #print(os.path.split(os.path.abspath(__file__))[0]+r'/html/my_map2.html')
+   #view.load(QtCore.QUrl().fromLocalFile(os.path.split(os.path.abspath(__file__))[0]+r'\html\my_map2.html'))
+   #view.show()
+   '''
+   output = QTextBrowser()
+   print(QtCore.QUrl().fromLocalFile(os.path.split(os.path.abspath(__file__))[0]+r'\html\my_map2.html'))
+   output.setSource(QtCore.QUrl().fromLocalFile(os.path.split(os.path.abspath(__file__))[0]+r'\html\my_map2.html'))
+   output.show()
+   '''
