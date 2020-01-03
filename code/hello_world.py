@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWebKit import QWebView
 
 def window():
    app = QApplication(sys.argv)
@@ -41,10 +42,21 @@ def window():
    txtNoDrones = QLineEdit(widget)
    txtNoDrones.move(650,110)
 
+   #For showing our HTML map
+   view = QWebView()
+   path = "/home/andrew/Documents/uni/project/Drone-Delivery-Scheduling/code/maps/my_map2.html"
+   local_url = QUrl.fromLocalFile(path)
+   view.load(local_url)
+   view.move(1,1)
+   view.show()
+
    widget.setGeometry(50,50,800,500)
    widget.setWindowTitle("Delivery Scheduler")
    widget.show()
    sys.exit(app.exec_())
+
+
+
 
 def btnAddClicked():
     print("Add")
