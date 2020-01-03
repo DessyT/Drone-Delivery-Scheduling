@@ -6,7 +6,7 @@ from itertools import cycle
 #Sample locations
 locs = [[-1,5],[-1,4],[-1,3],[-3,4],[-0.5,2],[-1,-1],[-2,-2],[-0.1,-4],[2,5],[4,2],[6,-2],[3,-4]]
 
-af = AffinityPropagation(damping=0.5,convergence_iter=15,affinity='euclidean').fit(locs)
+af = AffinityPropagation(damping=0.7,convergence_iter=15,affinity='euclidean').fit(locs)
 clusterCentreLocs = af.cluster_centers_indices_
 cluster = []
 clusters = []
