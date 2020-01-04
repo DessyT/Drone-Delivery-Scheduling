@@ -86,7 +86,6 @@ class SchedulerUI(QWidget):
             coords = dlg.getLocs()
             print(coords)
 
-        self.lblIntro.setText(coords)
         #Update GUI with new data
         self.update()
 
