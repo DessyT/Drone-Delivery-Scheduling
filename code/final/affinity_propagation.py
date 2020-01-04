@@ -41,7 +41,7 @@ class APClusters:
 
         return self.clusters
 
-
+'''
 #Testing with DB. Need to get data first
 testDB = db.DBHandler("db.sqlite3")
 locData = testDB.getAllLocs()
@@ -51,7 +51,7 @@ test = APClusters()
 derp = test.getClusters(locData)
 for herp in derp:
     print(herp)
-
+'''
 '''
 af = AffinityPropagation(damping=0.7,convergence_iter=15,affinity='euclidean').fit(locs)
 clusterCentreLocs = af.cluster_centers_indices_
