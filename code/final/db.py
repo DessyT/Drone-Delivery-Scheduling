@@ -32,8 +32,8 @@ class DBHandler:
         self.cur = self.con.cursor()
 
         sql = """
-        INSERT INTO orders (id,lat,lon)
-        VALUES (?,?,?);"""
+        INSERT INTO orders (lat,lon)
+        VALUES (?,?);"""
 
         self.cur.execute(sql,item)
         self.con.commit()
@@ -42,6 +42,6 @@ class DBHandler:
 '''
 test = DBHandler("db.sqlite3")
 test.createTable()
-item = (1,57.1497,2.0943)
+item = (57.1497,2.0943)
 test.addItem(item)
 '''

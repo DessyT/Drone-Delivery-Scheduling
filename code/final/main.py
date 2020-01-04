@@ -1,6 +1,7 @@
 import geneticAlgorithm
 import qtGUI
 import affinity_propagation
+import db
 import sys
 from PyQt5.QtWidgets import *
 

@@ -1,5 +1,6 @@
 import sys
 import os
+import db
 
 from PyQt5.QtWidgets import *
 
@@ -13,6 +14,12 @@ class SchedulerUI(QWidget):
 
     def __init__(self):
         super().__init__()
+
+        #Get DB object
+        self.database = db.DBHandler("db.sqlite3")
+        #Create table if it doesn't exist
+        self.database.createTable()
+
         self.initUI()
         self.bla = 0
 
@@ -82,9 +89,16 @@ class SchedulerUI(QWidget):
         #Call our dialog box
         dlg = AddDialog()
         if dlg.exec_():
-            #Get data from dialog box
+            #Get data from dialog box and cast to tuple
             coords = dlg.getLocs()
+
+            coordslist = coords.split(",")
+            coords = tuple(coordslist)
             print(coords)
+
+            #Add item
+            self.database.addItem(coords)
+            print("Item added",coords)
 
         #Update GUI with new data
         self.update()
