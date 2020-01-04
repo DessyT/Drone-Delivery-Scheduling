@@ -1,5 +1,6 @@
 from pyeasyga import pyeasyga
 import random
+import db
 import numpy as np
 
 #Class to perform a genetic search on given coordinates
@@ -85,7 +86,9 @@ class RouteFinder:
         return self.ga.best_individual()
 
 #locData = [[-1,5],[-1,4],[-1,3],[-3,4],[-0.5,2],[-1,-1],[-2,-2],[-0.1,-4],[2,5],[4,2],[6,-2],[3,-4]]
-'''
+''' WORKING WITH DB
+testDB = db.DBHandler("db.sqlite3")
+locData = testDB.getAllLocs()
+
 test = RouteFinder(locData)
-print(test.run())
-'''
+print(test.run())'''

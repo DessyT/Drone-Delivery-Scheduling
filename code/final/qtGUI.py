@@ -91,12 +91,10 @@ class SchedulerUI(QWidget):
         if dlg.exec_():
             #Get data from dialog box and cast to tuple
             coords = dlg.getLocs()
-
             coordslist = coords.split(",")
             coords = tuple(coordslist)
-            print(coords)
 
-            #Add item
+            #Add item to db
             self.database.addItem(coords)
             print("Item added",coords)
 

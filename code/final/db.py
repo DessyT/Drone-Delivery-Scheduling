@@ -8,12 +8,9 @@ class DBHandler:
     #Connect to DB
     def dbConnect(self,path):
         self.con = sqlite3.connect(path)
+        self.cur = self.con.cursor()
 
     def createTable(self):
-
-        #Connect to DB and get cursor for manipluation
-        #con = db_connect(path)
-        self.cur = self.con.cursor()
 
         #Generate table
         sql = """
@@ -29,8 +26,6 @@ class DBHandler:
 
     def addItem(self,item):
 
-        self.cur = self.con.cursor()
-
         sql = """
         INSERT INTO orders (lat,lon)
         VALUES (?,?);"""
@@ -39,9 +34,30 @@ class DBHandler:
         self.con.commit()
         #self.con.close()
 
-'''
-test = DBHandler("db.sqlite3")
-test.createTable()
-item = (57.1497,2.0943)
-test.addItem(item)
-'''
+    #Return all locations in a formatted list
+    def getAllLocs(self):
+
+        #Get data from DB
+        sql = """
+        SELECT lat, lon FROM orders"""
+
+        self.cur.execute(sql)
+
+        #Load into array
+        result = self.cur.fetchall()
+
+        #Convert tuple to list
+        data = []
+        for item in result:
+            str = list(item)
+            data.append(str)
+        #print(data)
+
+        return data
+
+
+#test = DBHandler("db.sqlite3")
+#test.createTable()
+#item = (57.1497,2.0943)
+#test.addItem(item)
+#test.getAllLocs()
