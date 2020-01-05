@@ -17,7 +17,8 @@ class DBHandler:
         CREATE TABLE IF NOT EXISTS orders (
             id integer PRIMARY KEY AUTOINCREMENT,
             lat double NOT NULL,
-            lon double NOT NULL);"""
+            lon double NOT NULL,
+            item varchar(20) NOT NULL);"""
 
         #Save and disconnect
         self.cur.execute(sql)
@@ -27,8 +28,8 @@ class DBHandler:
     def addItem(self,item):
 
         sql = """
-        INSERT INTO orders (lat,lon)
-        VALUES (?,?);"""
+        INSERT INTO orders (lat,lon,item)
+        VALUES (?,?,?);"""
 
         self.cur.execute(sql,item)
         self.con.commit()
@@ -38,8 +39,7 @@ class DBHandler:
     def getAllLocs(self):
 
         #Get data from DB
-        sql = """
-        SELECT lat, lon FROM orders"""
+        sql = "SELECT lat, lon FROM orders"
 
         self.cur.execute(sql)
 
@@ -47,17 +47,36 @@ class DBHandler:
         result = self.cur.fetchall()
 
         #Convert tuple to list
-        data = []
+        locData = []
         for item in result:
             str = list(item)
-            data.append(str)
-        #print(data)
+            locData.append(str)
+        #print(locData)
 
-        return data
+        return locData
+
+
+    def getLocsItems(self):
+
+        sql = "SELECT lat, lon, item FROM orders"
+
+        self.cur.execute(sql)
+
+        result = self.cur.fetchall()
+
+        #Convert tuple to list
+        allData = []
+        for item in result:
+            str = list(item)
+            allData.append(str)
+        #print(allData)
+
+        return allData
 
 
 #test = DBHandler("db.sqlite3")
 #test.createTable()
-#item = (57.1497,2.0943)
+#item = (57.1497,2.0943,"TEST")
 #test.addItem(item)
 #test.getAllLocs()
+#test.getLocsItems()

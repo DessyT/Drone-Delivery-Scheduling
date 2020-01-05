@@ -55,12 +55,10 @@ class SchedulerUI(QWidget):
         self.txtNoDrones = QLineEdit(self)
         self.txtNoDrones.move(650,110)
 
-        path = os.path.split(os.path.abspath(__file__))[0]+r'/html/my_map.html'
+        path = os.path.split(os.path.abspath(__file__))[0]+r'/html/baseMap.html'
         self.view = QtWebEngineWidgets.QWebEngineView(self)
         self.view.setGeometry(20,50,500,500)
         self.view.load(QtCore.QUrl().fromLocalFile(path))
-
-        print(path)
 
         self.show()
 
@@ -82,22 +80,30 @@ class SchedulerUI(QWidget):
         #Call our dialog box
         dlg = AddDialog()
         if dlg.exec_():
+
             #Get data from dialog box and cast to tuple
-            coords = dlg.getLocs()
-            coordslist = coords.split(",")
-            coords = tuple(coordslist)
+            order = dlg.getOrder()
+            orderList = order.split(",")
+            coords = tuple(orderList[:-1])
+
+            #Now cast to tuple for storage
+            item = tuple(orderList)
 
             #Add item to db
-            self.database.addItem(coords)
-            print("Item added",coords)
+            self.database.addItem(item)
+            print("Item added",item)
 
-            #Get all data from DB
+            #Get data from DB
             locData = self.database.getAllLocs()
             clusterer = affinityPropagation.APClusters(locData)
             clusters = clusterer.getClusters()
 
             #Instantiate mapmaker
             mapMaker = HTMLGen.MapMaker()
+
+            #Get all data for markers
+            allData = self.database.getLocsItems()
+            mapMaker.addMarkers(allData)
 
             #Plot points on map for each cluster
             for cluster in clusters:
@@ -106,7 +112,9 @@ class SchedulerUI(QWidget):
                 mapMaker.addAllLines(route)
 
             #Refresh the HTML to show changes
-            self.view.page().action(QWebEnginePage.Reload).trigger()
+            path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
+            self.view.load(QtCore.QUrl().fromLocalFile(path))
+            #self.view.page().action(QWebEnginePage.Reload).trigger()
 
             #Update GUI with new data
             #self.update()
@@ -123,28 +131,56 @@ class AddDialog(QDialog):
         self.setGeometry(50,50,250,250)
         self.setWindowTitle("Delivery Scheduler")
 
+        self.lblLat = QLabel("Latitude")
+        self.lblLon = QLabel("Longitude")
+        self.lblItem = QLabel("Item")
+        #self.lblLat.setText("Latitude")
+        #self.lblLon.setText("Longitude")
+
         self.txtLat = QLineEdit(self)
         self.txtLon = QLineEdit(self)
+        self.txtItem = QLineEdit(self)
         QBtn = QDialogButtonBox.Save | QDialogButtonBox.Cancel
 
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
+        self.grid = QGridLayout()
+        self.grid.setSpacing(2)
+        self.grid.addWidget(self.lblLat,1,0)
+        self.grid.addWidget(self.txtLat,1,1)
+        self.grid.addWidget(self.lblLon,2,0)
+        self.grid.addWidget(self.txtLon,2,1)
+        self.grid.addWidget(self.lblItem,3,0)
+        self.grid.addWidget(self.txtItem,3,1)
+        self.grid.addWidget(self.buttonBox,4,0)
+        self.setLayout(self.grid)
+
+        '''
         self.layout = QVBoxLayout()
+        self.layout.addWidget(self.lblLat)
         self.layout.addWidget(self.txtLat)
+        self.layout.addWidget(self.lblLon)
         self.layout.addWidget(self.txtLon)
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
+        '''
 
     #Return coordinates to main form
-    def getLocs(self):
+    def getOrder(self):
 
         lat = self.txtLat.text()
         lon = self.txtLon.text()
-        coords = lat + "," + lon
+        item = self.txtItem.text()
+        order = lat + "," + lon + "," + item
 
-        return coords
+        return order
+
+    def getItems(self):
+
+        item = self.txtItem.text()
+        return item
 
         '''
         self.btnAdd = QPushButton(self)

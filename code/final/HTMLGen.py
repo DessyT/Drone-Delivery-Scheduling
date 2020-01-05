@@ -9,6 +9,21 @@ class MapMaker:
         folium.PolyLine(locations = [(startLat, startLon), (endLat, endLon)],
                         line_opacity = 0.5).add_to(self.map)
 
+    def addMarkers(self,allData):
+
+        for i in range(len(allData)):
+            print(allData)
+            lat = allData[i][0]
+            lon = allData[i][1]
+            item = allData[i][2]
+
+            print("TEST",lat,lon,item)
+
+            folium.Marker([lat,lon],item).add_to(self.map)
+
+            self.map.save("html/routedMap.html")
+
+
     def addAllLines(self,locData):
 
         for i in range(len(locData)):
@@ -27,17 +42,16 @@ class MapMaker:
             endLat = end[0]
             endLon = end[1]
 
-            #print(startLat,startLon,endLat,endLon)
-
+            #Add this line and save map
             self.addLine(startLat,startLon,endLat,endLon)
 
-            self.map.save("html/my_map.html")
+            self.map.save("html/routedMap.html")
 
-'''
-test = MapMaker()
+
+#test = MapMaker()
 #Testing with DB. Need to get data first
-testDB = db.DBHandler("db.sqlite3")
-locData = testDB.getAllLocs()
+#testDB = db.DBHandler("db.sqlite3")
+#locData = testDB.getAllLocs()
 
-test.addAllLines(locData)
-'''
+#test.addAllLines([[0,0]])
+#test.addMarkers([[5,6,"TEST"]])
