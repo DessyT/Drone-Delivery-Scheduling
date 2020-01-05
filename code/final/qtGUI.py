@@ -1,13 +1,17 @@
 import sys
 import os
+
 import db
+import HTMLGen
+import affinityPropagation
+import geneticAlgorithm
 
 from PyQt5.QtWidgets import *
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5 import *
 
 class SchedulerUI(QWidget):
@@ -32,17 +36,6 @@ class SchedulerUI(QWidget):
         self.lblIntro.setText("Welcome to your Delivery Scheduler")
         self.lblIntro.move(20,20)
 
-        '''
-        btnCluster = QPushButton(widget)
-        btnCluster.setText("Cluster")
-        btnCluster.move(600,20)
-        btnCluster.clicked.connect(btnClusterClicked)
-
-        btnGA = QPushButton(widget)
-        btnGA.setText("GA")
-        btnGA.move(700,20)
-        btnGA.clicked.connect(btnGAClicked)
-        '''
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
         self.btnAdd.move(600,50)
@@ -62,7 +55,7 @@ class SchedulerUI(QWidget):
         self.txtNoDrones = QLineEdit(self)
         self.txtNoDrones.move(650,110)
 
-        path = os.path.split(os.path.abspath(__file__))[0]+r'/html/my_map2.html'
+        path = os.path.split(os.path.abspath(__file__))[0]+r'/html/my_map.html'
         self.view = QtWebEngineWidgets.QWebEngineView(self)
         self.view.setGeometry(20,50,500,500)
         self.view.load(QtCore.QUrl().fromLocalFile(path))
@@ -98,8 +91,25 @@ class SchedulerUI(QWidget):
             self.database.addItem(coords)
             print("Item added",coords)
 
-        #Update GUI with new data
-        self.update()
+            #Get all data from DB
+            locData = self.database.getAllLocs()
+            clusterer = affinityPropagation.APClusters(locData)
+            clusters = clusterer.getClusters()
+
+            #Instantiate mapmaker
+            mapMaker = HTMLGen.MapMaker()
+
+            #Plot points on map for each cluster
+            for cluster in clusters:
+                routeFinder = geneticAlgorithm.RouteFinder(cluster)
+                route = routeFinder.run()
+                mapMaker.addAllLines(route)
+
+            #Refresh the HTML to show changes
+            self.view.page().action(QWebEnginePage.Reload).trigger()
+
+            #Update GUI with new data
+            #self.update()
 
 #New delivery input dialog
 class AddDialog(QDialog):
@@ -115,9 +125,6 @@ class AddDialog(QDialog):
 
         self.txtLat = QLineEdit(self)
         self.txtLon = QLineEdit(self)
-        #self.txtLat.move(50,50)
-        #self.txtLon.move(50,100)
-
         QBtn = QDialogButtonBox.Save | QDialogButtonBox.Cancel
 
         self.buttonBox = QDialogButtonBox(QBtn)

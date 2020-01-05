@@ -27,11 +27,11 @@ class MapMaker:
             endLat = end[0]
             endLon = end[1]
 
-            print(startLat,startLon,endLat,endLon)
+            #print(startLat,startLon,endLat,endLon)
 
             self.addLine(startLat,startLon,endLat,endLon)
 
-            self.map.save("html/my_map3.html")
+            self.map.save("html/my_map.html")
 
 '''
 test = MapMaker()

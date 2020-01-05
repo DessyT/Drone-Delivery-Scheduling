@@ -15,6 +15,8 @@ class RouteFinder:
                                     elitism=True,
                                     maximise_fitness=False)
 
+        self.locData = locData
+
     #Calculate distance from one location to another
     def distance(self,loc1,loc2):
         xDis = abs(loc1[0] - loc2[0])
@@ -76,14 +78,20 @@ class RouteFinder:
 
     #Assign all functions to ga and run
     def run(self):
-        self.ga.create_individual = self.createIndividual
-        self.ga.crossover_function = self.crossover
-        self.ga.mutate_function = self.mutate
-        self.ga.selection_function = self.selection
-        self.ga.fitness_function = self.fitness
-        self.ga.run()
 
-        return self.ga.best_individual()
+        if len(self.locData) <= 1:
+            return self.locData
+        else:
+            self.ga.create_individual = self.createIndividual
+            self.ga.crossover_function = self.crossover
+            self.ga.mutate_function = self.mutate
+            self.ga.selection_function = self.selection
+            self.ga.fitness_function = self.fitness
+            self.ga.run()
+
+            return self.ga.best_individual()[1]
+
+
 
 #locData = [[-1,5],[-1,4],[-1,3],[-3,4],[-0.5,2],[-1,-1],[-2,-2],[-0.1,-4],[2,5],[4,2],[6,-2],[3,-4]]
 ''' WORKING WITH DB
