@@ -18,7 +18,8 @@ class DBHandler:
             id integer PRIMARY KEY AUTOINCREMENT,
             lat double NOT NULL,
             lon double NOT NULL,
-            item varchar(20) NOT NULL);"""
+            item varchar(20) NOT NULL,
+            time integer NOT NULL);"""
 
         #Save and disconnect
         self.cur.execute(sql)
@@ -28,8 +29,8 @@ class DBHandler:
     def addItem(self,item):
 
         sql = """
-        INSERT INTO orders (lat,lon,item)
-        VALUES (?,?,?);"""
+        INSERT INTO orders (lat,lon,item,time)
+        VALUES (?,?,?,?);"""
 
         self.cur.execute(sql,item)
         self.con.commit()
@@ -59,24 +60,38 @@ class DBHandler:
     def getLocsItems(self):
 
         sql = "SELECT lat, lon, item FROM orders"
-
         self.cur.execute(sql)
-
         result = self.cur.fetchall()
 
         #Convert tuple to list
-        allData = []
+        data = []
         for item in result:
             str = list(item)
-            allData.append(str)
+            data.append(str)
+        #print(data)
+
+        return data
+
+    def getLocsTime(self):
+
+        sql = "SELECT lat, lon, time FROM orders"
+        self.cur.execute(sql)
+        result = self.cur.fetchall()
+
+        #Convert tuple to list
+        data = []
+        for item in result:
+            str = list(item)
+            data.append(str)
         #print(allData)
 
-        return allData
+        return data
 
 
 #test = DBHandler("db.sqlite3")
 #test.createTable()
-#item = (57.1497,2.0943,"TEST")
+#item = (18.1497,22.0943,"TEST",3578311568)
 #test.addItem(item)
 #test.getAllLocs()
-#test.getLocsItems()
+#print(test.getLocsItems())
+#print(test.getLocsTime())

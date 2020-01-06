@@ -5,9 +5,9 @@ import numpy as np
 
 #Class to perform a genetic search on given coordinates
 class RouteFinder:
-    def __init__(self,locData):
+    def __init__(self,data):
 
-        self.ga = pyeasyga.GeneticAlgorithm(locData,
+        self.ga = pyeasyga.GeneticAlgorithm(data,
                                     population_size=200,
                                     generations=100,
                                     crossover_probability=0.8,
@@ -15,9 +15,9 @@ class RouteFinder:
                                     elitism=True,
                                     maximise_fitness=False)
 
-        self.locData = locData
+        self.data = data
 
-    #Calculate distance from one location to another
+    #Calculate distance from one location to another using euclidean
     def distance(self,loc1,loc2):
         xDis = abs(loc1[0] - loc2[0])
         yDis = abs(loc1[1] - loc2[1])
@@ -57,30 +57,42 @@ class RouteFinder:
         return random.choice(population)
 
     #Fitness function
-    #Calculates the length of the current route and inverts it
+    #Calculates the length of the current route and time customer has waited
     #Larger score = worse
     def fitness(self,route,data):
-        pathDistance = 0
         fitness = 0.0
         for i in range(0,len(route)):
 
-            fromLoc = route[i]
+            #Get score from route length only
+            fromLoc = route[i][:-1]
             toLoc = 0
 
+            #Make sure we dont overflow
             if (i + 1) < len(route):
-                toLoc = route[i+1]
+                toLoc = route[i+1][:-1]
             else:
-                toLoc = route[0]
+                toLoc = route[0][:-1]
 
-            pathDistance += self.distance(fromLoc,toLoc)
+            #Get length of each section and add to score
+            print("dist",self.distance(fromLoc,toLoc))
+            fitness += self.distance(fromLoc,toLoc)
 
-        return pathDistance
+            #Get score from order time.
+            #Unix timestamp is multiplied by position in the queue.
+            #Thus GA should tend towards the longest wait being at the front
+            #Need to scale down the value so route length is still a factor
+            time = route[i][2]
+            time = time/1000000000
+            print("time",time * i)
+            fitness += (time * i)
+
+        return fitness
 
     #Assign all functions to ga and run
     def run(self):
 
-        if len(self.locData) <= 1:
-            return self.locData
+        if len(self.data) <= 1:
+            return self.data
         else:
             self.ga.create_individual = self.createIndividual
             self.ga.crossover_function = self.crossover
@@ -89,14 +101,21 @@ class RouteFinder:
             self.ga.fitness_function = self.fitness
             self.ga.run()
 
-            return self.ga.best_individual()[1]
+            coordsList = []
 
+            #We only want to return coords for use later
+            for item in self.ga.best_individual()[1]:
+                coordsList.append(item[:-1])
 
+            return coordsList
+            #return self.ga.best_individual()[1]
 
-#locData = [[-1,5],[-1,4],[-1,3],[-3,4],[-0.5,2],[-1,-1],[-2,-2],[-0.1,-4],[2,5],[4,2],[6,-2],[3,-4]]
-''' WORKING WITH DB
+#TEST
+
 testDB = db.DBHandler("db.sqlite3")
-locData = testDB.getAllLocs()
+locData = testDB.getLocsTime()
+#locData = [[-1,5,1256],[5,3,123],[123,6,123]]
+#print(locData)
 
 test = RouteFinder(locData)
-print(test.run())'''
+print(test.run())
