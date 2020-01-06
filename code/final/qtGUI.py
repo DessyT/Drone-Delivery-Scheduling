@@ -20,15 +20,9 @@ class SchedulerUI(QWidget):
 
     def __init__(self):
         super().__init__()
-
-        #Get DB object
-        self.database = db.DBHandler("db.sqlite3")
-        #Create table if it doesn't exist
-        self.database.createTable()
-
         self.initUI()
-        self.bla = 0
 
+    #Setup out main window GUI
     def initUI(self):
 
         self.setGeometry(50,50,800,800)
@@ -36,48 +30,119 @@ class SchedulerUI(QWidget):
 
         self.lblIntro = QLabel(self)
         self.lblIntro.setText("Welcome to your Delivery Scheduler")
-        self.lblIntro.move(20,20)
-
-        self.btnAdd = QPushButton(self)
-        self.btnAdd.setText("Add")
-        self.btnAdd.move(600,50)
-        self.btnAdd.clicked.connect(self.btnAddClicked)
-
-        self.lblMaxDist = QLabel(self)
-        self.lblMaxDist.setText("MaxgeneticAlgorithm Dist:")
-        self.lblMaxDist.move(600,83)
-
-        self.txtMaxDist = QLineEdit(self)
-        self.txtMaxDist.move(650,80)
-
-        self.lblNoDrones = QLabel(self)
-        self.lblNoDrones.setText("Drones:")
-        self.lblNoDrones.move(600,113)
-
-        self.txtNoDrones = QLineEdit(self)
-        self.txtNoDrones.move(650,110)
+        self.lblIntro.move(10,20)
 
         path = os.path.split(os.path.abspath(__file__))[0]+r'/html/baseMap.html'
         self.view = QtWebEngineWidgets.QWebEngineView(self)
-        self.view.setGeometry(20,50,500,500)
+        self.view.setGeometry(10,50,500,500)
         self.view.load(QtCore.QUrl().fromLocalFile(path))
+
+        self.btnAdd = QPushButton(self)
+        self.btnAdd.setText("Add")
+        self.btnAdd.move(525,110)
+        self.btnAdd.clicked.connect(self.btnAddClicked)
+
+        self.lblMaxDist = QLabel(self)
+        self.lblMaxDist.setText("Max Dist:")
+        self.lblMaxDist.move(525,82)
+
+        self.txtMaxDist = QLineEdit(self)
+        self.txtMaxDist.move(610,80)
+
+        self.lblNoDrones = QLabel(self)
+        self.lblNoDrones.setText("Drones:")
+        self.lblNoDrones.move(525,52)
+
+        self.txtNoDrones = QLineEdit(self)
+        self.txtNoDrones.move(610,50)
+
+        self.btnRun = QPushButton(self)
+        self.btnRun.setText("Run")
+        self.btnRun.move(610,110)
+        self.btnRun.clicked.connect(self.btnRunClicked)
+
+        self.btnQuit = QPushButton(self)
+        self.btnQuit.setText("Quit")
+        self.btnQuit.move(695,110)
+        self.btnQuit.clicked.connect(self.btnQuitClicked)
+
+        self.btnOpenDB = QPushButton(self)
+        self.btnOpenDB.setText("Open DB")
+        self.btnOpenDB.move(525,140)
+        self.btnOpenDB.clicked.connect(self.btnOpenDBClicked)
+
+        self.btnCreateDB = QPushButton(self)
+        self.btnCreateDB.setText("Create DB")
+        self.btnCreateDB.move(610,140)
+        self.btnCreateDB.clicked.connect(self.btnCreateDBClicked)
+
+        self.lblOutput = QLabel(self)
+        self.lblOutput.move(525,170)
 
         self.show()
 
+    #Create new DB button functionality
+    def btnCreateDBClicked(self):
+
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
+        if fileName:
+            #Get DB object
+            self.database = db.DBHandler(fileName+".sqlite3")
+            #Create table if it doesn't exist
+            self.database.createTable()
+
+    #Open DB button functionality
+    def btnOpenDBClicked(self):
+
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
+        if fileName:
+            #Get DB object
+            self.database = db.DBHandler(fileName)
+            #Create table if it doesn't exist
+            self.database.createTable()
+
+    #Run button functionality
+    def btnRunClicked(self):
+
+        #Get data from DB
+        locsTimes = self.database.getLocsTime()
+        clusterer = affinityPropagation.APClusters(locsTimes)
+        clusters = clusterer.getClusters()
+
+        #Instantiate mapmaker
+        mapMaker = HTMLGen.MapMaker()
+
+        #Get all data for markers
+        allData = self.database.getLocsItems()
+        mapMaker.addMarkers(allData)
+
+        #For holding all lengths
+        lens = []
+
+        #Plot points on map for each cluster
+        for cluster in clusters:
+            routeFinder = geneticAlgorithm.RouteFinder(cluster)
+            route = routeFinder.run()
+            mapMaker.addAllLines(route)
+
+            #Find the real length in km of each route
+            realLength = self.getRealLength(route)
+            lens.append(realLength)
+            print("LEN",realLength,"km")
+
+        self.lblOutput.setText(str(lens))
+        self.lblOutput.adjustSize()
+
+        #Refresh the HTML to show changes
+        path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
+        self.view.load(QtCore.QUrl().fromLocalFile(path))
+
+    #Add button functionality
     def btnAddClicked(self):
-
-        '''Testing
-        if self.bla == 0:
-            path = os.path.split(os.path.abspath(__file__))[0]+r'/html/my_map2.html'
-            self.view.load(QtCore.QUrl().fromLocalFile(path))
-
-            self.bla = 1
-        else:
-            path = os.path.split(os.path.abspath(__file__))[0]+r'/html/my_map1.html'
-            self.view.load(QtCore.QUrl().fromLocalFile(path))
-
-            self.bla = 0
-        '''
 
         #Call our dialog box
         dlg = AddDialog()
@@ -95,36 +160,11 @@ class SchedulerUI(QWidget):
             self.database.addItem(item)
             print("Item added",item)
 
-            #Get data from DB
-            locsTimes = self.database.getLocsTime()
-            clusterer = affinityPropagation.APClusters(locsTimes)
-            clusters = clusterer.getClusters()
+    #Quit button functionality
+    def btnQuitClicked(self):
+        sys.exit()
 
-            #Instantiate mapmaker
-            mapMaker = HTMLGen.MapMaker()
-
-            #Get all data for markers
-            allData = self.database.getLocsItems()
-            mapMaker.addMarkers(allData)
-
-            #Plot points on map for each cluster
-            for cluster in clusters:
-                routeFinder = geneticAlgorithm.RouteFinder(cluster)
-                #print("CLUSTER",cluster)
-                route = routeFinder.run()
-                mapMaker.addAllLines(route)
-
-                realLength = self.getRealLength(route)
-                print("LEN",realLength)
-
-            #Refresh the HTML to show changes
-            path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
-            self.view.load(QtCore.QUrl().fromLocalFile(path))
-            #self.view.page().action(QWebEnginePage.Reload).trigger()
-
-            #Update GUI with new data
-            #self.update()
-
+    #Calculates the actual length of each route in km
     def getRealLength(self,route):
 
         total = 0
@@ -145,13 +185,13 @@ class SchedulerUI(QWidget):
             endLat = end[0]
             endLon = end[1]
 
+            #Cast to variable
             loc1 = (startLat,startLon)
             loc2 = (endLat,endLon)
 
+            #Find length in km
             dist = haversine(loc1,loc2)
-
             total = total + dist
-
             return total
 
 #New delivery input dialog
