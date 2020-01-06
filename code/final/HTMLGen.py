@@ -17,7 +17,7 @@ class MapMaker:
             lon = allData[i][1]
             item = allData[i][2]
 
-            print("TEST",lat,lon,item)
+            #print("TEST",lat,lon,item)
 
             folium.Marker([lat,lon],item).add_to(self.map)
 

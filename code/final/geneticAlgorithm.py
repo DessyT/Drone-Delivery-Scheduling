@@ -2,6 +2,7 @@ from pyeasyga import pyeasyga
 import random
 import db
 import numpy as np
+from haversine import haversine, Unit
 
 #Class to perform a genetic search on given coordinates
 class RouteFinder:
@@ -64,29 +65,39 @@ class RouteFinder:
         for i in range(0,len(route)):
 
             #Get score from route length only
-            fromLoc = route[i][:-1]
+            fromLoc = route[i]
             toLoc = 0
 
             #Make sure we dont overflow
             if (i + 1) < len(route):
-                toLoc = route[i+1][:-1]
+                toLoc = route[i+1]
             else:
-                toLoc = route[0][:-1]
+                toLoc = route[0]
 
             #Get length of each section and add to score
-            print("dist",self.distance(fromLoc,toLoc))
+            #print("dist",self.distance(fromLoc,toLoc))
+            #print("FROM",fromLoc,"TO",toLoc)
             fitness += self.distance(fromLoc,toLoc)
 
             #Get score from order time.
             #Unix timestamp is multiplied by position in the queue.
             #Thus GA should tend towards the longest wait being at the front
             #Need to scale down the value so route length is still a factor
+            #print("ROUTE",route[i])
             time = route[i][2]
             time = time/1000000000
-            print("time",time * i)
+            #print("time",time * i)
             fitness += (time * i)
 
+            #While looping also get the real length for use later
+
         return fitness
+
+    def getRealLength(self,loc1,loc2):
+
+        length = haversine(loc,loc2)
+        return length
+
 
     #Assign all functions to ga and run
     def run(self):
@@ -111,7 +122,7 @@ class RouteFinder:
             #return self.ga.best_individual()[1]
 
 #TEST
-
+'''
 testDB = db.DBHandler("db.sqlite3")
 locData = testDB.getLocsTime()
 #locData = [[-1,5,1256],[5,3,123],[123,6,123]]
@@ -119,3 +130,4 @@ locData = testDB.getLocsTime()
 
 test = RouteFinder(locData)
 print(test.run())
+'''

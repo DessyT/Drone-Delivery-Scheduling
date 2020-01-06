@@ -14,6 +14,8 @@ from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5 import *
 
+from haversine import haversine, Unit
+
 class SchedulerUI(QWidget):
 
     def __init__(self):
@@ -94,8 +96,8 @@ class SchedulerUI(QWidget):
             print("Item added",item)
 
             #Get data from DB
-            locData = self.database.getAllLocs()
-            clusterer = affinityPropagation.APClusters(locData)
+            locsTimes = self.database.getLocsTime()
+            clusterer = affinityPropagation.APClusters(locsTimes)
             clusters = clusterer.getClusters()
 
             #Instantiate mapmaker
@@ -108,8 +110,12 @@ class SchedulerUI(QWidget):
             #Plot points on map for each cluster
             for cluster in clusters:
                 routeFinder = geneticAlgorithm.RouteFinder(cluster)
+                #print("CLUSTER",cluster)
                 route = routeFinder.run()
                 mapMaker.addAllLines(route)
+
+                realLength = self.getRealLength(route)
+                print("LEN",realLength)
 
             #Refresh the HTML to show changes
             path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
@@ -118,6 +124,35 @@ class SchedulerUI(QWidget):
 
             #Update GUI with new data
             #self.update()
+
+    def getRealLength(self,route):
+
+        total = 0
+
+        for i in range(len(route)):
+
+            #So we don't overflow
+            if (i + 1 == len(route)):
+                start = route[i]
+                end = route[0]
+            else:
+                start = route[i]
+                end = route[i + 1]
+
+            #Start and end lat and lon
+            startLat = start[0]
+            startLon = start[1]
+            endLat = end[0]
+            endLon = end[1]
+
+            loc1 = (startLat,startLon)
+            loc2 = (endLat,endLon)
+
+            dist = haversine(loc1,loc2)
+
+            total = total + dist
+
+            return total
 
 #New delivery input dialog
 class AddDialog(QDialog):
@@ -134,12 +169,14 @@ class AddDialog(QDialog):
         self.lblLat = QLabel("Latitude")
         self.lblLon = QLabel("Longitude")
         self.lblItem = QLabel("Item")
+        self.lblTime = QLabel("Time")
         #self.lblLat.setText("Latitude")
         #self.lblLon.setText("Longitude")
 
         self.txtLat = QLineEdit(self)
         self.txtLon = QLineEdit(self)
         self.txtItem = QLineEdit(self)
+        self.txtTime = QLineEdit(self)
         QBtn = QDialogButtonBox.Save | QDialogButtonBox.Cancel
 
         self.buttonBox = QDialogButtonBox(QBtn)
@@ -154,7 +191,9 @@ class AddDialog(QDialog):
         self.grid.addWidget(self.txtLon,2,1)
         self.grid.addWidget(self.lblItem,3,0)
         self.grid.addWidget(self.txtItem,3,1)
-        self.grid.addWidget(self.buttonBox,4,0)
+        self.grid.addWidget(self.lblTime,4,0)
+        self.grid.addWidget(self.txtTime,4,1)
+        self.grid.addWidget(self.buttonBox,5,0)
         self.setLayout(self.grid)
 
         '''
@@ -173,7 +212,8 @@ class AddDialog(QDialog):
         lat = self.txtLat.text()
         lon = self.txtLon.text()
         item = self.txtItem.text()
-        order = lat + "," + lon + "," + item
+        time = self.txtTime.text()
+        order = lat + "," + lon + "," + item + "," + time
 
         return order
 
