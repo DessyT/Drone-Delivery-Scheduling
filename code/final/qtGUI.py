@@ -25,7 +25,7 @@ class SchedulerUI(QWidget):
     #Setup out main window GUI
     def initUI(self):
 
-        self.setGeometry(50,50,800,800)
+        self.setGeometry(50,50,800,575)
         self.setWindowTitle("Delivery Scheduler")
 
         self.lblIntro = QLabel(self)
@@ -210,8 +210,6 @@ class AddDialog(QDialog):
         self.lblLon = QLabel("Longitude")
         self.lblItem = QLabel("Item")
         self.lblTime = QLabel("Time")
-        #self.lblLat.setText("Latitude")
-        #self.lblLon.setText("Longitude")
 
         self.txtLat = QLineEdit(self)
         self.txtLon = QLineEdit(self)
@@ -236,16 +234,6 @@ class AddDialog(QDialog):
         self.grid.addWidget(self.buttonBox,5,0)
         self.setLayout(self.grid)
 
-        '''
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.lblLat)
-        self.layout.addWidget(self.txtLat)
-        self.layout.addWidget(self.lblLon)
-        self.layout.addWidget(self.txtLon)
-        self.layout.addWidget(self.buttonBox)
-        self.setLayout(self.layout)
-        '''
-
     #Return coordinates to main form
     def getOrder(self):
 
@@ -257,32 +245,11 @@ class AddDialog(QDialog):
 
         return order
 
+    #Return item to main form
     def getItems(self):
 
         item = self.txtItem.text()
         return item
-
-        '''
-        self.btnAdd = QPushButton(self)
-        self.btnAdd.setText("Add")
-        self.btnAdd.move(50,150)
-        self.btnAdd.clicked.connect(self.btnAddClicked)
-
-        self.btnCancel = QPushButton(self)
-        self.btnCancel.setText("Cancel")
-        self.btnCancel.move(150,150)
-        self.btnCancel.clicked.connect(self.btnCancelClicked)
-        '''
-
-        '''
-    #Button functions
-    def btnAddClicked(self):
-        print("Added")
-        self.close()
-    def btnCancelClicked(self):
-        print("Cancelled")
-        self.close()
-        '''
 
 if __name__ == '__main__':
 

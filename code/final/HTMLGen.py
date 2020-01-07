@@ -3,7 +3,9 @@ import db
 
 class MapMaker:
     def __init__(self):
+        #Create map object and allow click to get location
         self.map = folium.Map(location = [57.151954, -2.091723], width=500, height=500, zoom_start=15)
+        self.map.add_child(folium.LatLngPopup())
 
     def addLine(self,startLat,startLon,endLat,endLon):
         folium.PolyLine(locations = [(startLat, startLon), (endLat, endLon)],
@@ -16,8 +18,6 @@ class MapMaker:
             lat = allData[i][0]
             lon = allData[i][1]
             item = allData[i][2]
-
-            #print("TEST",lat,lon,item)
 
             folium.Marker([lat,lon],item).add_to(self.map)
 
