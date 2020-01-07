@@ -205,6 +205,7 @@ class SchedulerUI(QWidget):
             dist = haversine(loc1,loc2)
             #print("dist",dist)
             total = total + dist
+
         return total
 
 #New delivery input dialog

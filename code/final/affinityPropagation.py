@@ -8,8 +8,12 @@ import geneticAlgorithm
 class APClusters:
     def __init__(self,locTimes):
 
+        #We want to cluster based on coordinates so remove times
+        coords = []
+        for item in locTimes:
+            coords.append(item[:-1])
         #self.af = AffinityPropagation(preference=-10,damping=0.5,convergence_iter=15,affinity='euclidean').fit(locTimes[:-1])
-        self.af = AffinityPropagation(preference=-100,damping=0.99,convergence_iter=15,affinity='euclidean').fit(locTimes)
+        self.af = AffinityPropagation(damping=0.75,convergence_iter=15,affinity='euclidean').fit(coords)
         self.locTimes = locTimes
 
     def getCentralNodes(self):
