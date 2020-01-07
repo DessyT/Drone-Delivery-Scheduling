@@ -25,22 +25,16 @@ class APClusters:
         #For number of clusters
         for i in range(len(self.clusterCentreLocs)):
             self.cluster = []
-            #print("TEST",self.locTimes)
             #Check if the indexes match and append to correct cluster array
             for j in range(len(self.af.labels_)):
                 if self.af.labels_[j] == i:
-                    print("LABEL",self.af.labels_[j])
                     self.cluster.append(self.locTimes[j])
             #Append the depot, my flat for now
-            self.cluster.append([57.152074,-2.091727,1578318631])
+            self.cluster.append([57.152910, -2.107126,1578318631])
             self.clusters.append(self.cluster)
 
         #print("No clusters = ",len(self.clusterCentreLocs))
         return self.clusters
-
-#Sample locTimes
-#locs = [[-1,5],[-1,4],[-1,3],[-3,4],[-0.5,2],[-1,-1],[-2,-2],[-0.1,-4],[2,5],[4,2],[6,-2],[3,-4]]
-
 
 '''
 #Testing with DB. Need to get data first

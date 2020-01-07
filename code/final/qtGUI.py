@@ -18,8 +18,13 @@ from haversine import haversine, Unit
 
 class SchedulerUI(QWidget):
 
+
     def __init__(self):
         super().__init__()
+        #Instantiate mapmaker
+        self.mapMaker = HTMLGen.MapMaker()
+        self.path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
+        self.dbOpenFlag = False
         self.initUI()
 
     #Setup out main window GUI
@@ -32,10 +37,10 @@ class SchedulerUI(QWidget):
         self.lblIntro.setText("Welcome to your Delivery Scheduler")
         self.lblIntro.move(10,20)
 
-        path = os.path.split(os.path.abspath(__file__))[0]+r'/html/baseMap.html'
+        basePath = os.path.split(os.path.abspath(__file__))[0]+r'/html/baseMap.html'
         self.view = QtWebEngineWidgets.QWebEngineView(self)
         self.view.setGeometry(10,50,500,500)
-        self.view.load(QtCore.QUrl().fromLocalFile(path))
+        self.view.load(QtCore.QUrl().fromLocalFile(basePath))
 
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
@@ -86,12 +91,14 @@ class SchedulerUI(QWidget):
 
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
+        self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
         if fileName:
-            #Get DB object
+            #Get db object
             self.database = db.DBHandler(fileName+".sqlite3")
             #Create table if it doesn't exist
             self.database.createTable()
+            #Allow db operations
+            self.dbOpenFlag = True
 
     #Open DB button functionality
     def btnOpenDBClicked(self):
@@ -100,65 +107,73 @@ class SchedulerUI(QWidget):
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
         if fileName:
-            #Get DB object
+            #Get db object
             self.database = db.DBHandler(fileName)
             #Create table if it doesn't exist
             self.database.createTable()
 
+            #Get all data for markers and plot
+            allData = self.database.getLocsItems()
+            self.mapMaker.addMarkers(allData)
+            #Allow db operations
+            self.dbOpenFlag = True
+            #Refresh the HTML to show changes
+            self.view.load(QtCore.QUrl().fromLocalFile(self.path))
+
     #Run button functionality
     def btnRunClicked(self):
 
-        #Get data from DB
-        locsTimes = self.database.getLocsTime()
-        clusterer = affinityPropagation.APClusters(locsTimes)
-        clusters = clusterer.getClusters()
+        #Check if DB is open first
+        if(self.dbOpenFlag == False):
+            QMessageBox.about(self,"Error","Load or create a database before running")
+        else:
+            #Get data from DB
+            locsTimes = self.database.getLocsTime()
+            clusterer = affinityPropagation.APClusters(locsTimes)
+            clusters = clusterer.getClusters()
 
-        #Instantiate mapmaker
-        mapMaker = HTMLGen.MapMaker()
+            #For holding all lengths
+            lens = []
 
-        #Get all data for markers
-        allData = self.database.getLocsItems()
-        mapMaker.addMarkers(allData)
+            for cluster in clusters:
+                #Find a route
+                routeFinder = geneticAlgorithm.RouteFinder(cluster)
+                route = routeFinder.run()
+                #Plot the route
+                self.mapMaker.addAllLines(route)
 
-        #For holding all lengths
-        lens = []
+                #Find the real length in km of each route
+                realLength = self.getRealLength(route)
+                lens.append(realLength)
+                print("LEN",realLength,"km")
 
-        #Plot points on map for each cluster
-        for cluster in clusters:
-            routeFinder = geneticAlgorithm.RouteFinder(cluster)
-            route = routeFinder.run()
-            mapMaker.addAllLines(route)
+            self.lblOutput.setText(str(lens))
+            self.lblOutput.adjustSize()
 
-            #Find the real length in km of each route
-            realLength = self.getRealLength(route)
-            lens.append(realLength)
-            print("LEN",realLength,"km")
-
-        self.lblOutput.setText(str(lens))
-        self.lblOutput.adjustSize()
-
-        #Refresh the HTML to show changes
-        path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
-        self.view.load(QtCore.QUrl().fromLocalFile(path))
+            #Refresh the HTML to show changes
+            self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
     #Add button functionality
     def btnAddClicked(self):
 
         #Call our dialog box
-        dlg = AddDialog()
-        if dlg.exec_():
+        if(self.dbOpenFlag == False):
+            QMessageBox.about(self,"Error","Load or create a database before adding")
+        else:
+            dlg = AddDialog()
+            if dlg.exec_():
 
-            #Get data from dialog box and cast to tuple
-            order = dlg.getOrder()
-            orderList = order.split(",")
-            coords = tuple(orderList[:-1])
+                #Get data from dialog box and cast to tuple
+                order = dlg.getOrder()
+                orderList = order.split(",")
+                coords = tuple(orderList[:-1])
 
-            #Now cast to tuple for storage
-            item = tuple(orderList)
+                #Now cast to tuple for storage
+                item = tuple(orderList)
 
-            #Add item to db
-            self.database.addItem(item)
-            print("Item added",item)
+                #Add item to db
+                self.database.addItem(item)
+                print("Item added",item)
 
     #Quit button functionality
     def btnQuitClicked(self):

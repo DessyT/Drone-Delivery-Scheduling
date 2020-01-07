@@ -4,26 +4,30 @@ import db
 class MapMaker:
     def __init__(self):
         #Create map object and allow click to get location
-        self.map = folium.Map(location = [57.151954, -2.091723], width=500, height=500, zoom_start=15)
+        #My flat self.map = folium.Map(location = [57.151954, -2.091723], width=500, height=500, zoom_start=15)
+        self.map = folium.Map(location = [57.152910, -2.107126], width=500, height=500, zoom_start=13)
         self.map.add_child(folium.LatLngPopup())
+        self.routedPath = "html/routedMap.html"
+        #To create a new one if we need self.map.save("html/baseMap.html")
 
+    #Add a single line between two points
     def addLine(self,startLat,startLon,endLat,endLon):
         folium.PolyLine(locations = [(startLat, startLon), (endLat, endLon)],
                         line_opacity = 0.5).add_to(self.map)
 
+    #Add all markers
     def addMarkers(self,allData):
 
         for i in range(len(allData)):
-            print(allData)
             lat = allData[i][0]
             lon = allData[i][1]
             item = allData[i][2]
 
             folium.Marker([lat,lon],item).add_to(self.map)
 
-            self.map.save("html/routedMap.html")
+            self.map.save(self.routedPath)
 
-
+    #Add every line along a route
     def addAllLines(self,locData):
 
         for i in range(len(locData)):
@@ -45,7 +49,7 @@ class MapMaker:
             #Add this line and save map
             self.addLine(startLat,startLon,endLat,endLon)
 
-            self.map.save("html/routedMap.html")
+            self.map.save(self.routedPath)
 
 
 #test = MapMaker()

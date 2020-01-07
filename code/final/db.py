@@ -1,4 +1,5 @@
 import sqlite3
+import psutil
 
 class DBHandler:
 
@@ -24,7 +25,6 @@ class DBHandler:
         #Save and disconnect
         self.cur.execute(sql)
         self.con.commit()
-        #self.con.close()
 
     def addItem(self,item):
 
@@ -34,7 +34,6 @@ class DBHandler:
 
         self.cur.execute(sql,item)
         self.con.commit()
-        #self.con.close()
 
     #Return all locations in a formatted list
     def getAllLocs(self):
@@ -68,7 +67,6 @@ class DBHandler:
         for item in result:
             str = list(item)
             data.append(str)
-        #print(data)
 
         return data
 
@@ -87,6 +85,19 @@ class DBHandler:
 
         return data
 
+    #Check if db is connected
+    def checkStatus(self,path):
+
+        for proc in psutil.process_iter():
+            try:
+                files = proc.get_open_files()
+                if files:
+                    for _file in files:
+                        if _file.path == path:
+                            return True
+            except psutil.NoSuchProcess as err:
+                print(err)
+        return False
 
 #test = DBHandler("db.sqlite3")
 #test.createTable()
