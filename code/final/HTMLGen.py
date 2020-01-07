@@ -18,6 +18,8 @@ class MapMaker:
     #Add all markers
     def addMarkers(self,allData):
 
+        folium.Marker([57.152910, -2.107126],"Depot").add_to(self.map)
+
         for i in range(len(allData)):
             lat = allData[i][0]
             lon = allData[i][1]
@@ -25,20 +27,19 @@ class MapMaker:
 
             folium.Marker([lat,lon],item).add_to(self.map)
 
-            self.map.save(self.routedPath)
+        self.map.save(self.routedPath)
 
     #Add every line along a route
     def addAllLines(self,locData):
-
         for i in range(len(locData)):
 
-            #So we don't overflow
-            if (i + 1 == len(locData)):
+            #Make sure we dont overflow
+            if (i + 1) < len(locData):
                 start = locData[i]
-                end = locData[0]
+                end = locData[i+1]
             else:
                 start = locData[i]
-                end = locData[i + 1]
+                end = locData[0]
 
             #Start and end lat and lon
             startLat = start[0]

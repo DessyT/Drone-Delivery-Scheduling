@@ -8,8 +8,8 @@ import geneticAlgorithm
 class APClusters:
     def __init__(self,locTimes):
 
-        print(type(locTimes))
-        self.af = AffinityPropagation(preference=-10,damping=0.5,convergence_iter=15,affinity='euclidean').fit(locTimes[:-1])
+        #self.af = AffinityPropagation(preference=-10,damping=0.5,convergence_iter=15,affinity='euclidean').fit(locTimes[:-1])
+        self.af = AffinityPropagation(preference=-10,damping=0.5,convergence_iter=15,affinity='euclidean').fit(locTimes)
         self.locTimes = locTimes
 
     def getCentralNodes(self):
@@ -20,20 +20,23 @@ class APClusters:
         self.clusterCentreLocs = self.af.cluster_centers_indices_
         self.cluster = []
         self.clusters = []
-        #self.locTimes = locTimes
 
         #For number of clusters
+        #i holds the index of each cluster
         for i in range(len(self.clusterCentreLocs)):
             self.cluster = []
             #Check if the indexes match and append to correct cluster array
+            #Loop through every item and compare indexes. Append if they match
             for j in range(len(self.af.labels_)):
+                print(j)
                 if self.af.labels_[j] == i:
                     self.cluster.append(self.locTimes[j])
-            #Append the depot, my flat for now
+
+            #Append the depot
             self.cluster.append([57.152910, -2.107126,1578318631])
             self.clusters.append(self.cluster)
 
-        #print("No clusters = ",len(self.clusterCentreLocs))
+
         return self.clusters
 
 '''

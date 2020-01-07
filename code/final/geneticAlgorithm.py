@@ -62,7 +62,9 @@ class RouteFinder:
     #Larger score = worse
     def fitness(self,route,data):
         fitness = 0.0
-        for i in range(0,len(route)):
+        #print(route)
+        for i in range(len(route)):
+        #for i in range(0,len(route)):
 
             #Get score from route length only
             fromLoc = route[i]
@@ -71,6 +73,7 @@ class RouteFinder:
             #Make sure we dont overflow
             if (i + 1) < len(route):
                 toLoc = route[i+1]
+                #print(toLoc)
             else:
                 toLoc = route[0]
 

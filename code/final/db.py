@@ -83,6 +83,7 @@ class DBHandler:
             data.append(str)
         #print(allData)
 
+        print("DATA",data)
         return data
 
     #Check if db is connected

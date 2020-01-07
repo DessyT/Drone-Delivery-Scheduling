@@ -91,7 +91,7 @@ class SchedulerUI(QWidget):
 
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
         if fileName:
             #Get db object
             self.database = db.DBHandler(fileName+".sqlite3")
@@ -131,7 +131,7 @@ class SchedulerUI(QWidget):
             locsTimes = self.database.getLocsTime()
             clusterer = affinityPropagation.APClusters(locsTimes)
             clusters = clusterer.getClusters()
-
+            print("CLUSTS",clusters,"\n")
             #For holding all lengths
             lens = []
 
@@ -139,6 +139,7 @@ class SchedulerUI(QWidget):
                 #Find a route
                 routeFinder = geneticAlgorithm.RouteFinder(cluster)
                 route = routeFinder.run()
+                print(route)
                 #Plot the route
                 self.mapMaker.addAllLines(route)
 
@@ -185,7 +186,7 @@ class SchedulerUI(QWidget):
         total = 0
 
         for i in range(len(route)):
-
+            '''
             #So we don't overflow
             if (i + 1 == len(route)):
                 start = route[i]
@@ -193,6 +194,14 @@ class SchedulerUI(QWidget):
             else:
                 start = route[i]
                 end = route[i + 1]
+            '''
+            #Make sure we dont overflow
+            if (i + 1) < len(route):
+                start = route[i]
+                end = route[i+1]
+            else:
+                start = route[i]
+                end = route[0]
 
             #Start and end lat and lon
             startLat = start[0]
