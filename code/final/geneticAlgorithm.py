@@ -89,10 +89,7 @@ class RouteFinder:
             #print("ROUTE",route[i])
             time = route[i][2]
             time = time/1000000000
-            #print("time",time * i)
             fitness += (time * i)
-
-            #While looping also get the real length for use later
 
         return fitness
 

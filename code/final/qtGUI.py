@@ -123,7 +123,7 @@ class SchedulerUI(QWidget):
     #Run button functionality
     def btnRunClicked(self):
 
-        #Check if DB is open first
+        #If db isn't open show an error
         if(self.dbOpenFlag == False):
             QMessageBox.about(self,"Error","Load or create a database before running")
         else:
@@ -131,7 +131,6 @@ class SchedulerUI(QWidget):
             locsTimes = self.database.getLocsTime()
             clusterer = affinityPropagation.APClusters(locsTimes)
             clusters = clusterer.getClusters()
-            print("CLUSTS",clusters,"\n")
             #For holding all lengths
             lens = []
 
@@ -139,7 +138,6 @@ class SchedulerUI(QWidget):
                 #Find a route
                 routeFinder = geneticAlgorithm.RouteFinder(cluster)
                 route = routeFinder.run()
-                print(route)
                 #Plot the route
                 self.mapMaker.addAllLines(route)
 
@@ -184,17 +182,7 @@ class SchedulerUI(QWidget):
     def getRealLength(self,route):
 
         total = 0
-
         for i in range(len(route)):
-            '''
-            #So we don't overflow
-            if (i + 1 == len(route)):
-                start = route[i]
-                end = route[0]
-            else:
-                start = route[i]
-                end = route[i + 1]
-            '''
             #Make sure we dont overflow
             if (i + 1) < len(route):
                 start = route[i]
@@ -215,8 +203,9 @@ class SchedulerUI(QWidget):
 
             #Find length in km
             dist = haversine(loc1,loc2)
+            #print("dist",dist)
             total = total + dist
-            return total
+        return total
 
 #New delivery input dialog
 class AddDialog(QDialog):
