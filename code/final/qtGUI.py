@@ -15,6 +15,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5 import *
 
 from haversine import haversine, Unit
+import geo.sphere as sphere
 
 class SchedulerUI(QWidget):
 
@@ -200,11 +201,15 @@ class SchedulerUI(QWidget):
             #Cast to variable
             loc1 = (startLat,startLon)
             loc2 = (endLat,endLon)
-
+            print(loc1,loc2)
             #Find length in km
             dist = haversine(loc1,loc2)
-            #print("dist",dist)
+
             total = total + dist
+
+            #Get bearing for now
+            #bearing = sphere.bearing(loc1,loc2)
+            #print("deg=",bearing,"/n")
 
         return total
 

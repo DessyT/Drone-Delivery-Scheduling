@@ -2,6 +2,8 @@ from pyeasyga import pyeasyga
 import random
 import db
 import numpy as np
+import geo.sphere as sphere
+
 from haversine import haversine, Unit
 
 #Class to perform a genetic search on given coordinates
@@ -80,7 +82,23 @@ class RouteFinder:
             #Get length of each section and add to score
             #print("dist",self.distance(fromLoc,toLoc))
             #print("FROM",fromLoc,"TO",toLoc)
-            fitness += self.distance(fromLoc,toLoc)
+            #print(fromLoc,toLoc)
+            #print("FROM",fromLoc)
+            #print("Bearing = ", self.getBearing(fromLoc,toLoc))
+
+            #fitness += self.distance(fromLoc,toLoc)
+
+            loc1 = (fromLoc[0],fromLoc[1])
+            loc2 = (toLoc[0],toLoc[1])
+            #print("Bearing = ", self.getBearing(loc1,loc2))
+            fitness += self.getRealLength(loc1,loc2)
+            print("Real LEN = ", self.getRealLength(loc1,loc2))
+            #Get score for bearing
+            #The greater the angle, the worse the score.
+            #fitness += self.getBearing(loc1,loc2)
+            fitness += self.getBearing(loc1,loc2)
+
+            print("Real Bearing = ", self.getBearing(loc1,loc2))
 
             #Get score from order time.
             #Unix timestamp is multiplied by position in the queue.
@@ -94,10 +112,27 @@ class RouteFinder:
         return fitness
 
     def getRealLength(self,loc1,loc2):
-
-        length = haversine(loc,loc2)
+        #length = haversine(loc,loc2)
+        length = haversine(loc1,loc2)
         return length
 
+    def getBearing(self,loc1,loc2):
+
+        windDir = 270
+
+        bearing = sphere.bearing(loc1,loc2)
+
+        difference = (bearing - windDir) % 360.0
+
+        if difference >= 180:
+            difference -= 360
+
+        difference = abs(difference) / 100
+
+        #print("Bearing = ",bearing)
+        #print("DIFF = ",difference)
+
+        return difference
 
     #Assign all functions to ga and run
     def run(self):
@@ -125,7 +160,7 @@ class RouteFinder:
 '''
 testDB = db.DBHandler("db.sqlite3")
 locData = testDB.getLocsTime()
-#locData = [[-1,5,1256],[5,3,123],[123,6,123]]
+#locData = [[-1,5,1256],[-1,50,123],[-1,-6,123]]
 #print(locData)
 
 test = RouteFinder(locData)
