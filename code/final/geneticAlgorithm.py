@@ -3,7 +3,7 @@ import random
 import db
 import numpy as np
 import geo.sphere as sphere
-
+import weatherdata
 from haversine import haversine, Unit
 
 #Class to perform a genetic search on given coordinates
@@ -19,6 +19,10 @@ class RouteFinder:
                                     maximise_fitness=False)
 
         self.data = data
+
+        #Get wind direction first
+        weather = weatherdata.WeatherData()
+        self.windDir = weather.getWindDirection(57.1497,-2.0943)
 
     #Calculate distance from one location to another using euclidean
     def distance(self,loc1,loc2):
@@ -66,39 +70,25 @@ class RouteFinder:
         fitness = 0.0
         #print(route)
         for i in range(len(route)):
-        #for i in range(0,len(route)):
 
-            #Get score from route length only
             fromLoc = route[i]
             toLoc = 0
 
             #Make sure we dont overflow
             if (i + 1) < len(route):
                 toLoc = route[i+1]
-                #print(toLoc)
             else:
                 toLoc = route[0]
-
-            #Get length of each section and add to score
-            #print("dist",self.distance(fromLoc,toLoc))
-            #print("FROM",fromLoc,"TO",toLoc)
-            #print(fromLoc,toLoc)
-            #print("FROM",fromLoc)
-            #print("Bearing = ", self.getBearing(fromLoc,toLoc))
 
             #fitness += self.distance(fromLoc,toLoc)
 
             loc1 = (fromLoc[0],fromLoc[1])
             loc2 = (toLoc[0],toLoc[1])
-            #print("Bearing = ", self.getBearing(loc1,loc2))
             fitness += self.getRealLength(loc1,loc2)
-            print("Real LEN = ", self.getRealLength(loc1,loc2))
-            #Get score for bearing
-            #The greater the angle, the worse the score.
-            #fitness += self.getBearing(loc1,loc2)
-            fitness += self.getBearing(loc1,loc2)
 
-            print("Real Bearing = ", self.getBearing(loc1,loc2))
+            #Get score for bearing
+            #The greater the angle, the worse the score
+            fitness += self.getBearing(loc1,loc2)
 
             #Get score from order time.
             #Unix timestamp is multiplied by position in the queue.
@@ -109,6 +99,10 @@ class RouteFinder:
             time = time/1000000000
             fitness += (time * i)
 
+            #print("Real LEN = ", self.getRealLength(loc1,loc2))
+            #print("Real Bearing = ", self.getBearing(loc1,loc2))
+            #print("Real time = ",(time * i))
+
         return fitness
 
     def getRealLength(self,loc1,loc2):
@@ -116,21 +110,21 @@ class RouteFinder:
         length = haversine(loc1,loc2)
         return length
 
+    #get the difference in angle between wind direction and travel direction
     def getBearing(self,loc1,loc2):
 
-        windDir = 270
-
+        #Calculate the degree of travel
         bearing = sphere.bearing(loc1,loc2)
 
-        difference = (bearing - windDir) % 360.0
+        #Get the difference between the wind direction and travel direction
+        difference = (bearing - self.windDir) % 360.0
 
+        #Normalise to +- 180
         if difference >= 180:
             difference -= 360
 
+        #Convert to positive if negative
         difference = abs(difference) / 100
-
-        #print("Bearing = ",bearing)
-        #print("DIFF = ",difference)
 
         return difference
 
@@ -153,6 +147,7 @@ class RouteFinder:
             for item in self.ga.best_individual()[1]:
                 coordsList.append(item[:-1])
 
+            print("Wind dir = ",self.windDir)
             return coordsList
             #return self.ga.best_individual()[1]
 

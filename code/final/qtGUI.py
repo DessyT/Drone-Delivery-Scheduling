@@ -207,10 +207,6 @@ class SchedulerUI(QWidget):
 
             total = total + dist
 
-            #Get bearing for now
-            #bearing = sphere.bearing(loc1,loc2)
-            #print("deg=",bearing,"/n")
-
         return total
 
 #New delivery input dialog
