@@ -2,7 +2,11 @@ from pyeasyga import pyeasyga
 import random
 import db
 import numpy as np
-import geo.sphere as sphere
+#import geo.sphere as sphere
+#from geographiclib.geodesic import Geodesic
+#import pyproj
+import bearing
+
 import weatherdata
 import E6B
 from haversine import haversine, Unit
@@ -20,6 +24,9 @@ class RouteFinder:
                                     maximise_fitness=False)
 
         self.data = data
+
+        self.bearingFinder = bearing.BearingFinder()
+        self.e6b = E6B.E6B()
 
         #Get wind data
         weather = weatherdata.WeatherData()
@@ -92,12 +99,11 @@ class RouteFinder:
 
             #Get score for speed of travel
             #Lower speed = worse score
-            e6b = E6B.E6B()
 
             droneDir = self.getBearing(loc1,loc2)
 
-            correctedDir,dir = e6b.getCorrectedDirection(self.windSpeed,self.windDir,droneDir,self.droneSpeed)
-            speed = e6b.getCorrectedSpeed(self.windSpeed,self.windDir,droneDir,self.droneSpeed,dir)
+            correctedDir,dir = self.e6b.getCorrectedDirection(self.windSpeed,self.windDir,droneDir,self.droneSpeed)
+            speed = self.e6b.getCorrectedSpeed(self.windSpeed,self.windDir,droneDir,self.droneSpeed,dir)
 
             #Do speed distance time to calculate time to travel a section
             distance = self.getRealLength(loc1,loc2)
@@ -118,7 +124,7 @@ class RouteFinder:
             #print("ROUTE",route[i])
             time = route[i][2]
             time = time/1000000000
-            print("Wait score =",(time * i))
+            #print("Wait score =",(time * i))
             fitness += (time * i)
 
             #print("Real LEN = ", self.getRealLength(loc1,loc2))
@@ -136,10 +142,47 @@ class RouteFinder:
     #get the difference in angle between wind direction and travel direction
     def getBearing(self,loc1,loc2):
 
+        bearing = self.bearingFinder.getBearing(loc1,loc2)
+        print(bearing)
+        return bearing
+
+        '''
+        lat1,lon1 = loc1[0],loc1[1]
+        lat2,lon2 = loc2[0],loc1[1]
+
+        print("LATS",lat1,lat2)
+        print("LONS",lon1,lon2)
+        bearing = Geodesic.WGS84.Inverse(lat1, lon2, lat2, lon2)["azi1"]
+        print("test",bearing)
+        return bearing
+        '''
+        '''
+        WORKS ON PC NOT LAPTOP
         #Calculate the degree of travel
         bearing = sphere.bearing(loc1,loc2)
-
+        print("BEARING",bearing)
         return bearing
+        '''
+
+        '''
+        lat1,lon1 = loc1[0],loc1[1]
+        lat2,lon2 = loc2[0],loc1[1]
+
+        bearing = Geodesic.WGS84.Inverse(lat1, lon1, lat2, lon2)['azi2']
+        #bearing = Geodesic.WGS84.Inverse(-41.32, 174.81, 40.96, -5.50)['azi1']
+        print("brns",bearing)
+        return bearing
+        '''
+
+        '''
+        lat1,lon1 = loc1[0],loc1[1]
+        lat2,lon2 = loc2[0],loc1[1]
+        geodesic = pyproj.Geod(ellps='WGS84')
+        fwd_azimuth,back_azimuth,distance = geodesic.inv(lat1, lon1, lat2, lon2)
+        print("Bearing",fwd_azimuth)
+        return fwd_azimuth
+        '''
+
         '''
         #Get the difference between the wind direction and travel direction
         difference = (bearing - self.windDir) % 360.0
@@ -172,7 +215,7 @@ class RouteFinder:
             for item in self.ga.best_individual()[1]:
                 coordsList.append(item[:-1])
 
-            print("Wind dir = ",self.windDir)
+            #print("Wind dir = ",self.windDir)
             return coordsList
             #return self.ga.best_individual()[1]
 
