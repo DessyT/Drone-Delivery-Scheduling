@@ -4,6 +4,7 @@ import db
 import numpy as np
 import geo.sphere as sphere
 import weatherdata
+import E6B
 from haversine import haversine, Unit
 
 #Class to perform a genetic search on given coordinates
@@ -20,9 +21,12 @@ class RouteFinder:
 
         self.data = data
 
-        #Get wind direction first
+        #Get wind data
         weather = weatherdata.WeatherData()
         self.windDir = weather.getWindDirection(57.1497,-2.0943)
+        self.windSpeed = weather.getWindSpeed(57.1497,-2.0943)
+        #Sample parameters
+        self.droneSpeed = 15
 
     #Calculate distance from one location to another using euclidean
     def distance(self,loc1,loc2):
@@ -84,11 +88,28 @@ class RouteFinder:
 
             loc1 = (fromLoc[0],fromLoc[1])
             loc2 = (toLoc[0],toLoc[1])
-            fitness += self.getRealLength(loc1,loc2)
+            #fitness += self.getRealLength(loc1,loc2)
+
+            #Get score for speed of travel
+            #Lower speed = worse score
+            e6b = E6B.E6B()
+
+            droneDir = self.getBearing(loc1,loc2)
+
+            correctedDir,dir = e6b.getCorrectedDirection(self.windSpeed,self.windDir,droneDir,self.droneSpeed)
+            speed = e6b.getCorrectedSpeed(self.windSpeed,self.windDir,droneDir,self.droneSpeed,dir)
+
+            #Do speed distance time to calculate time to travel a section
+            distance = self.getRealLength(loc1,loc2)
+
+            time = distance / speed
+            print("Time score =,",(time / 10))
+            fitness += (time / 10)
 
             #Get score for bearing
             #The greater the angle, the worse the score
-            fitness += self.getBearing(loc1,loc2)
+
+            #fitness += self.getBearing(loc1,loc2)
 
             #Get score from order time.
             #Unix timestamp is multiplied by position in the queue.
@@ -97,6 +118,7 @@ class RouteFinder:
             #print("ROUTE",route[i])
             time = route[i][2]
             time = time/1000000000
+            print("Wait score =",(time * i))
             fitness += (time * i)
 
             #print("Real LEN = ", self.getRealLength(loc1,loc2))
@@ -107,7 +129,8 @@ class RouteFinder:
 
     def getRealLength(self,loc1,loc2):
         #length = haversine(loc,loc2)
-        length = haversine(loc1,loc2)
+        length = haversine(loc1,loc2,unit="m")
+        print(length)
         return length
 
     #get the difference in angle between wind direction and travel direction
@@ -116,6 +139,8 @@ class RouteFinder:
         #Calculate the degree of travel
         bearing = sphere.bearing(loc1,loc2)
 
+        return bearing
+        '''
         #Get the difference between the wind direction and travel direction
         difference = (bearing - self.windDir) % 360.0
 
@@ -126,7 +151,7 @@ class RouteFinder:
         #Convert to positive if negative
         difference = abs(difference) / 100
 
-        return difference
+        return difference'''
 
     #Assign all functions to ga and run
     def run(self):
@@ -153,7 +178,7 @@ class RouteFinder:
 
 #TEST
 '''
-testDB = db.DBHandler("db.sqlite3")
+testDB = db.DBHandler("aberdeen.sqlite3")
 locData = testDB.getLocsTime()
 #locData = [[-1,5,1256],[-1,50,123],[-1,-6,123]]
 #print(locData)
