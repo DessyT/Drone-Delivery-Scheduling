@@ -15,7 +15,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5 import *
 
 from haversine import haversine, Unit
-import geo.sphere as sphere
+#import geo.sphere as sphere
 
 class SchedulerUI(QWidget):
 
