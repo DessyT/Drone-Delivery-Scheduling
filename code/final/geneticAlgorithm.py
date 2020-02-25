@@ -13,8 +13,8 @@ class RouteFinder:
     def __init__(self,data):
 
         self.ga = pyeasyga.GeneticAlgorithm(data,
-                                    population_size=200,
-                                    generations=100,
+                                    population_size=500,
+                                    generations=1000,
                                     crossover_probability=0.8,
                                     mutation_probability=0.2,
                                     elitism=True,
