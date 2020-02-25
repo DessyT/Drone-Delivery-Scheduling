@@ -29,7 +29,7 @@ class RouteFinder:
         self.e6b = E6B.E6B()
 
         #Get wind data
-        weather = weatherdata.WeatherData()
+        weather = weatherdata.WeatherData(57.1497,-2.0943)
         self.windDir = weather.getWindDirection(57.1497,-2.0943)
         self.windSpeed = weather.getWindSpeed(57.1497,-2.0943)
         #Sample parameters
