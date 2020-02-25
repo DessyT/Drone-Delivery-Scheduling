@@ -135,7 +135,7 @@ class SchedulerUI(QWidget):
             lens = []
 
             #Colour settings here for now
-            colours = ["red","orange","blue","green","orange","pink","cadetblue"]
+            colours = ["red","darkgreen","blue","green","orange","pink","cadetblue","orange"]
             i = 0
             print("Finding clusters and routes..\n")
             print("{} clusters needed".format(len(clusters)))
