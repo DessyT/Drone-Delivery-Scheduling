@@ -11,9 +11,9 @@ class MapMaker:
         #To create a new one if we need self.map.save("html/baseMap.html")
 
     #Add a single line between two points
-    def addLine(self,startLat,startLon,endLat,endLon):
+    def addLine(self,startLat,startLon,endLat,endLon,colour):
         folium.PolyLine(locations = [(startLat, startLon), (endLat, endLon)],
-                        line_opacity = 0.5).add_to(self.map)
+                        line_opacity = 0.5,color=colour).add_to(self.map)
 
     #Add all markers
     def addMarkers(self,allData):
@@ -30,7 +30,7 @@ class MapMaker:
         self.map.save(self.routedPath)
 
     #Add every line along a route
-    def addAllLines(self,locData):
+    def addAllLines(self,locData,colour):
         for i in range(len(locData)):
 
             #Make sure we dont overflow
@@ -48,7 +48,7 @@ class MapMaker:
             endLon = end[1]
 
             #Add this line and save map
-            self.addLine(startLat,startLon,endLat,endLon)
+            self.addLine(startLat,startLon,endLat,endLon,colour)
 
             self.map.save(self.routedPath)
 

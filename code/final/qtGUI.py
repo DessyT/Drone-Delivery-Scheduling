@@ -135,12 +135,17 @@ class SchedulerUI(QWidget):
             #For holding all lengths
             lens = []
 
+            #Colour settings here for now
+            colours = ["red","yellow","blue","green","orange","pink","cadetblue"]
+            i = 0
+
             for cluster in clusters:
                 #Find a route
                 routeFinder = geneticAlgorithm.RouteFinder(cluster)
                 route = routeFinder.run()
                 #Plot the route
-                self.mapMaker.addAllLines(route)
+                self.mapMaker.addAllLines(route,colours[i])
+                i += 1
 
                 #Find the real length in km of each route
                 realLength = self.getRealLength(route)
