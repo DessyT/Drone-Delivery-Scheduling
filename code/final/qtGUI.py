@@ -15,7 +15,6 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5 import *
 
 from haversine import haversine, Unit
-#import geo.sphere as sphere
 
 class SchedulerUI(QWidget):
 
@@ -136,11 +135,14 @@ class SchedulerUI(QWidget):
             lens = []
 
             #Colour settings here for now
-            colours = ["red","yellow","blue","green","orange","pink","cadetblue"]
+            colours = ["red","orange","blue","green","orange","pink","cadetblue"]
             i = 0
+            print("Finding clusters and routes..\n")
+            print("{} clusters needed".format(len(clusters)))
 
             for cluster in clusters:
                 #Find a route
+                print("\nRoute {}".format(i + 1))
                 routeFinder = geneticAlgorithm.RouteFinder(cluster)
                 route = routeFinder.run()
                 #Plot the route
@@ -150,10 +152,11 @@ class SchedulerUI(QWidget):
                 #Find the real length in km of each route
                 realLength = self.getRealLength(route)
                 lens.append(realLength)
-                print("LEN",realLength,"km")
+                #print("LEN",realLength,"km")
 
             self.lblOutput.setText(str(lens))
             self.lblOutput.adjustSize()
+            print("\nRoutes completed succesfully\n")
 
             #Refresh the HTML to show changes
             self.view.load(QtCore.QUrl().fromLocalFile(self.path))

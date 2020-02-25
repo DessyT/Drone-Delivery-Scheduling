@@ -2,9 +2,6 @@ from pyeasyga import pyeasyga
 import random
 import db
 import numpy as np
-#import geo.sphere as sphere
-#from geographiclib.geodesic import Geodesic
-#import pyproj
 import bearing
 
 import weatherdata
@@ -109,7 +106,7 @@ class RouteFinder:
             distance = self.getRealLength(loc1,loc2)
 
             time = distance / speed
-            print("Time score =,",(time / 10))
+            #print("Time score =,",(time / 10))
             fitness += (time / 10)
 
             #Get score for bearing
@@ -136,14 +133,14 @@ class RouteFinder:
     def getRealLength(self,loc1,loc2):
         #length = haversine(loc,loc2)
         length = haversine(loc1,loc2,unit="m")
-        print(length)
+        #print(length)
         return length
 
     #get the difference in angle between wind direction and travel direction
     def getBearing(self,loc1,loc2):
 
         bearing = self.bearingFinder.getBearing(loc1,loc2)
-        print(bearing)
+        #print(bearing)
         return bearing
 
         '''
