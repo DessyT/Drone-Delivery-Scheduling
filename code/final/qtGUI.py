@@ -145,12 +145,12 @@ class SchedulerUI(QWidget):
                 #Defaults to 5 drones if no input or invalid
                 noDrones = self.txtNoDrones.text()
 
-                #Check its integer
-                if not isinstance(noDrones,int):
+                #Check its integer and > 0
+                if not isinstance(noDrones,int) or noDrones > 0:
                     noDrones = 5
-                #Check it's > 0
-                if noDrones <= 0:
-                    noDrones = 5
+                    self.txtNoDrones.setText("5")
+
+
 
                 #Get clusters
                 clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
