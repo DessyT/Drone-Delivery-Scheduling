@@ -5,18 +5,30 @@ class KMeansClusters:
     def __init__(self,locTimes,noClusters):
 
         #We want to cluster based on coordinates so remove times
-        coords = []
+        print("TYPE",type(noClusters))
+
+        self.coords = []
         for item in locTimes:
-            coords.append(item[:-1])
-            
+            self.coords.append(item[:-1])
+
         self.noClusters = int(noClusters)
-        self.kmeans = KMeans(n_clusters=self.noClusters, random_state=0).fit(coords)
         self.locTimes = locTimes
+
 
     def getCentralNodes(self):
         return self.clusterCentreLocs
 
     def getClusters(self):
+
+        #Catch if number of drones is > customers
+        #If so, just give each customer their own drone
+        if self.noClusters > len(self.coords):
+            print("Drones > Locations")
+            self.noClusters = len(self.coords)
+            self.kmeans = KMeans(n_clusters=self.noClusters, random_state=0).fit(self.coords)
+        else:
+            self.kmeans = KMeans(n_clusters=self.noClusters, random_state=0).fit(self.coords)
+
 
         self.clusterCentreLocs = self.kmeans.cluster_centers_
         self.cluster = []
@@ -38,13 +50,15 @@ class KMeansClusters:
 
         return self.clusters
 
+        #return None
+
 '''
 #Testing with DB. Need to get data first
 testDB = db.DBHandler("aberdeen.sqlite3")
 locData = testDB.getLocsTime()
 
 #Now get class and clusters
-test = KMeansClusters(locData,5)
+test = KMeansClusters(locData,15)
 clusters = test.getClusters()
 i = 0
 for cluster in clusters:
