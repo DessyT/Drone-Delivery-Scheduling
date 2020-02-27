@@ -8,8 +8,9 @@ class KMeansClusters:
         coords = []
         for item in locTimes:
             coords.append(item[:-1])
-        #self.kmeans = AffinityPropagation(preference=-10,damping=0.5,convergence_iter=15,affinity='euclidean').fit(locTimes[:-1])
-        self.kmeans = KMeans(n_clusters=noClusters, random_state=0).fit(coords)
+            
+        self.noClusters = int(noClusters)
+        self.kmeans = KMeans(n_clusters=self.noClusters, random_state=0).fit(coords)
         self.locTimes = locTimes
 
     def getCentralNodes(self):

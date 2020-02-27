@@ -1,6 +1,7 @@
 import sys
 import os
 
+import kmeans
 import db
 import HTMLGen
 import affinityPropagation
@@ -127,10 +128,19 @@ class SchedulerUI(QWidget):
         if(self.dbOpenFlag == False):
             QMessageBox.about(self,"Error","Load or create a database before running")
         else:
+
             #Get data from DB
             locsTimes = self.database.getLocsTime()
+
+            ''' Affinity Propagation
             clusterer = affinityPropagation.APClusters(locsTimes)
+            clusters = clusterer.getClusters() '''
+
+            ''' KMEANS '''
+            noDrones = self.txtNoDrones.text()
+            clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
             clusters = clusterer.getClusters()
+
             #For holding all lengths
             lens = []
 
