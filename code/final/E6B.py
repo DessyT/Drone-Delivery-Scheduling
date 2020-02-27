@@ -50,11 +50,11 @@ class E6B:
                             droneSpeed * windSpeed * m.cos(droneDir - windDir + correctAngle))
 
         return groundSpeed
-'''
-#Testing
 
+#Testing
+'''
 #Sample wind speed and bearing
-windSpeed = 15
+windSpeed = 10
 windDir = m.radians(90)
 
 #Sample drone speed and bearing
