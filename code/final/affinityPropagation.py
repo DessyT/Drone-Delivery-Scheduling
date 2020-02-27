@@ -13,7 +13,7 @@ class APClusters:
         for item in locTimes:
             coords.append(item[:-1])
         #self.af = AffinityPropagation(preference=-10,damping=0.5,convergence_iter=15,affinity='euclidean').fit(locTimes[:-1])
-        self.af = AffinityPropagation(damping=0.75,convergence_iter=1,affinity='euclidean').fit(coords)
+        self.af = AffinityPropagation(damping=0.75,convergence_iter=8,affinity='euclidean').fit(coords)
         self.locTimes = locTimes
 
     def getCentralNodes(self):

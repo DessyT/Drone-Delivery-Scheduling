@@ -85,6 +85,11 @@ class SchedulerUI(QWidget):
         self.lblOutput = QLabel(self)
         self.lblOutput.move(525,170)
 
+        self.combo = QComboBox(self)
+        self.combo.addItem("kMeans")
+        self.combo.addItem("Aff. Prop.")
+        self.combo.move(525,200)
+
         self.show()
 
     #Create new DB button functionality
@@ -132,31 +137,34 @@ class SchedulerUI(QWidget):
             #Get data from DB
             locsTimes = self.database.getLocsTime()
 
-            ''' Affinity Propagation
-            clusterer = affinityPropagation.APClusters(locsTimes)
-            clusters = clusterer.getClusters() '''
+            #Find which clustering algorithm to use
+            algorithm = self.combo.currentIndex()
+            if algorithm == 0:
+                ''' KMEANS '''
+                #Get number of drones from textbox and validate > 0
+                #Defaults to 5 drones if no input or invalid
+                noDrones = self.txtNoDrones.text()
 
-            ''' KMEANS '''
-            #Get number of drones from textbox and validate > 0
-            #Defaults to 5 drones if no input or invalid
-            noDrones = self.txtNoDrones.text()
+                #Check its integer
+                if not isinstance(noDrones,int):
+                    noDrones = 5
+                #Check it's > 0
+                if noDrones <= 0:
+                    noDrones = 5
 
-            #Check its integer
-            if not isinstance(noDrones,int):
-                noDrones = 5
-            #Check it's > 0
-            if noDrones <= 0:
-                noDrones = 5
-
-            #Get clusters
-            clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
-            clusters = clusterer.getClusters()
+                #Get clusters
+                clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
+                clusters = clusterer.getClusters()
+            else:
+                ''' Affinity Propagation '''
+                clusterer = affinityPropagation.APClusters(locsTimes)
+                clusters = clusterer.getClusters()
 
             #For holding all lengths
             lens = []
 
             #List of colours for output
-            colours = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
+            colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
             i = 0
             print("Finding clusters and routes..\n")
             print("{} clusters needed".format(len(clusters)))
