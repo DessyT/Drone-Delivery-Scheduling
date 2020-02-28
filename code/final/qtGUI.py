@@ -45,11 +45,11 @@ class SchedulerUI(QWidget):
 
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
-        self.btnAdd.move(525,110)
+        self.btnAdd.move(525,170)
         self.btnAdd.clicked.connect(self.btnAddClicked)
 
         self.lblMaxDist = QLabel(self)
-        self.lblMaxDist.setText("Max Dist:")
+        self.lblMaxDist.setText("Max F Time:")
         self.lblMaxDist.move(525,82)
 
         self.txtMaxDist = QLineEdit(self)
@@ -64,12 +64,12 @@ class SchedulerUI(QWidget):
 
         self.btnRun = QPushButton(self)
         self.btnRun.setText("Run")
-        self.btnRun.move(610,110)
+        self.btnRun.move(610,170)
         self.btnRun.clicked.connect(self.btnRunClicked)
 
         self.btnQuit = QPushButton(self)
         self.btnQuit.setText("Quit")
-        self.btnQuit.move(695,110)
+        self.btnQuit.move(695,170)
         self.btnQuit.clicked.connect(self.btnQuitClicked)
 
         self.btnOpenDB = QPushButton(self)
@@ -82,13 +82,10 @@ class SchedulerUI(QWidget):
         self.btnCreateDB.move(610,140)
         self.btnCreateDB.clicked.connect(self.btnCreateDBClicked)
 
-        self.lblOutput = QLabel(self)
-        self.lblOutput.move(525,170)
-
         self.combo = QComboBox(self)
         self.combo.addItem("kMeans")
         self.combo.addItem("Aff. Prop.")
-        self.combo.move(525,200)
+        self.combo.move(695,140)
 
         self.show()
 
@@ -145,11 +142,10 @@ class SchedulerUI(QWidget):
                 #Defaults to 5 drones if no input or invalid
                 noDrones = self.txtNoDrones.text()
 
-                #Check its integer and > 0
-                if not isinstance(noDrones,int) or noDrones > 0:
+                #Check its > 0
+                if noDrones <= 0:
                     noDrones = 5
                     self.txtNoDrones.setText("5")
-
 
 
                 #Get clusters
@@ -183,8 +179,6 @@ class SchedulerUI(QWidget):
                 lens.append(realLength)
                 #print("LEN",realLength,"km")
 
-            self.lblOutput.setText(str(lens))
-            self.lblOutput.adjustSize()
             print("\nRoutes completed succesfully\n")
 
             #Refresh the HTML to show changes
