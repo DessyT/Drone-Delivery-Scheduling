@@ -4,9 +4,6 @@ import db
 class KMeansClusters:
     def __init__(self,locTimes,noClusters):
 
-        #We want to cluster based on coordinates so remove times
-        print("TYPE",type(noClusters))
-
         self.coords = []
         for item in locTimes:
             self.coords.append(item[:-1])
