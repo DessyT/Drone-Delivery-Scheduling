@@ -1,6 +1,7 @@
 import sys
 import os
 
+import kmeans
 import db
 import HTMLGen
 import affinityPropagation
@@ -44,11 +45,11 @@ class SchedulerUI(QWidget):
 
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
-        self.btnAdd.move(525,110)
+        self.btnAdd.move(525,170)
         self.btnAdd.clicked.connect(self.btnAddClicked)
 
         self.lblMaxDist = QLabel(self)
-        self.lblMaxDist.setText("Max Dist:")
+        self.lblMaxDist.setText("Max F Time:")
         self.lblMaxDist.move(525,82)
 
         self.txtMaxDist = QLineEdit(self)
@@ -63,12 +64,12 @@ class SchedulerUI(QWidget):
 
         self.btnRun = QPushButton(self)
         self.btnRun.setText("Run")
-        self.btnRun.move(610,110)
+        self.btnRun.move(610,170)
         self.btnRun.clicked.connect(self.btnRunClicked)
 
         self.btnQuit = QPushButton(self)
         self.btnQuit.setText("Quit")
-        self.btnQuit.move(695,110)
+        self.btnQuit.move(695,170)
         self.btnQuit.clicked.connect(self.btnQuitClicked)
 
         self.btnOpenDB = QPushButton(self)
@@ -81,8 +82,10 @@ class SchedulerUI(QWidget):
         self.btnCreateDB.move(610,140)
         self.btnCreateDB.clicked.connect(self.btnCreateDBClicked)
 
-        self.lblOutput = QLabel(self)
-        self.lblOutput.move(525,170)
+        self.combo = QComboBox(self)
+        self.combo.addItem("kMeans")
+        self.combo.addItem("Aff. Prop.")
+        self.combo.move(695,140)
 
         self.show()
 
@@ -121,30 +124,78 @@ class SchedulerUI(QWidget):
             self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
     #Run button functionality
+
+
     def btnRunClicked(self):
 
         #If db isn't open show an error
         if(self.dbOpenFlag == False):
             QMessageBox.about(self,"Error","Load or create a database before running")
         else:
+
             #Get data from DB
             locsTimes = self.database.getLocsTime()
-            clusterer = affinityPropagation.APClusters(locsTimes)
-            clusters = clusterer.getClusters()
-            #For holding all lengths
-            lens = []
 
-            #Colour settings here for now
-            colours = ["red","darkgreen","blue","green","orange","pink","cadetblue","orange"]
+            #Find which clustering algorithm to use
+            algorithm = self.combo.currentIndex()
+            if algorithm == 0:
+                ''' KMEANS '''
+                #Get number of drones from textbox and validate > 0
+                #Defaults to 5 drones if no input or invalid
+                noDrones = int(self.txtNoDrones.text())
+
+                #Check its > 0
+                if noDrones <= 0:
+                    noDrones = 5
+                    self.txtNoDrones.setText("5")
+
+
+                #Get clusters
+                clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
+                self.clusters = clusterer.getClusters()
+            else:
+                ''' Affinity Propagation '''
+                clusterer = affinityPropagation.APClusters(locsTimes)
+                self.clusters = clusterer.getClusters()
+
+            #For holding all lengths and routes
+            lens = []
+            self.routes = []
+            self.maxRouteLength = 3.5
+
+            #List of colours for output
+            colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
             i = 0
             print("Finding clusters and routes..\n")
-            print("{} clusters needed".format(len(clusters)))
+            print(f"{len(self.clusters)} clusters")
 
-            for cluster in clusters:
-                #Find a route
-                print("\nRoute {}".format(i + 1))
+            allPossible = False
+            for cluster in self.clusters:
+                #while allPossible == False:
+                allPossible = self.getPossibleRoutes(cluster)
+                #self.clusters.remove(cluster)
+
+
                 routeFinder = geneticAlgorithm.RouteFinder(cluster)
                 route = routeFinder.run()
+                self.mapMaker.addAllLines(route,colours[i])
+                i += 1
+
+
+            '''
+            for cluster in clusters:
+                #Find a route
+                print(f"\nRoute {i+1}")
+                routeFinder = geneticAlgorithm.RouteFinder(cluster)
+                route = routeFinder.run()
+
+                ##Add route to array
+                routes.append(route)
+                #Get real length and add to array
+                realLength = self.getRealLength(route)
+                lens.append(realLength)
+
+
                 #Plot the route
                 self.mapMaker.addAllLines(route,colours[i])
                 i += 1
@@ -154,12 +205,43 @@ class SchedulerUI(QWidget):
                 lens.append(realLength)
                 #print("LEN",realLength,"km")
 
-            self.lblOutput.setText(str(lens))
-            self.lblOutput.adjustSize()
-            print("\nRoutes completed succesfully\n")
+            print("\nRoutes completed succesfully\n")'''
 
             #Refresh the HTML to show changes
             self.view.load(QtCore.QUrl().fromLocalFile(self.path))
+
+
+    def getPossibleRoutes(self,cluster):
+
+        #print(f"\nRoute {i+1}")
+        routeFinder = geneticAlgorithm.RouteFinder(cluster)
+        route = routeFinder.run()
+
+        #Get real length and add to array
+        realLength = self.getRealLength(route)
+
+        #If route is too long
+        if realLength > self.maxRouteLength:
+            #Remove depot from route
+            if [57.152910, -2.107126,1578318631] in cluster:
+                cluster.remove([57.152910, -2.107126,1578318631])
+            #cluster.remove([57.152910, -2.107126,1578318631])
+
+            #Split in 2
+            clusterer = kmeans.KMeansClusters(cluster,2)
+            splitClusters = clusterer.getClusters()
+
+            #Remove original cluster and append 2 new ones
+            #self.clusters.remove(cluster)
+            if cluster in self.clusters:
+                self.clusters.remove(cluster)
+
+            for babyCluster in splitClusters:
+                self.clusters.append(babyCluster)
+
+            return False
+        return True
+
 
     #Add button functionality
     def btnAddClicked(self):
