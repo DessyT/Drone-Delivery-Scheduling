@@ -17,7 +17,7 @@ class RouteFinder:
                                     generations=300,
                                     crossover_probability=0.8,
                                     mutation_probability=0.2,
-                                    elitism=True,
+                                    elitism=False,
                                     maximise_fitness=False)
 
         self.data = data
@@ -214,12 +214,13 @@ class RouteFinder:
 
             #print("Wind dir = ",self.windDir)
             return coordsList
-            #return self.ga.best_individual()[1]
-
-#TEST
+            print(self.ga.best_individual())
 '''
+#TEST
+
 testDB = db.DBHandler("aberdeen.sqlite3")
 locData = testDB.getLocsTime()
+locData.insert(0,[57.152910, -2.107126,1578318631])
 #locData = [[-1,5,1256],[-1,50,123],[-1,-6,123]]
 #print(locData)
 

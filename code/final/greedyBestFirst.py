@@ -1,12 +1,15 @@
 #Nearest Neighbour
 from haversine import haversine, Unit
+import db
 
 class GreedyBestFirst:
 
-    def __init__(self,allLocs,route):
+    def __init__(self,allLocs):
         print("Using greedy best first")
         self.allLocs = allLocs
-        self.route = route
+        self.allLocs = [locs[:-1] for locs in allLocs]
+        #Starting location
+        self.route = []
 
     def routeFinder(self):
 
@@ -20,7 +23,10 @@ class GreedyBestFirst:
             #Pick shortest distance as next self.route to take
             for loc in self.allLocs:
                 #Distance from end of self.route to current loc
-                legDist = self.getDist(self.route[-1],loc)
+                if len(self.route) == 0:
+                    legDist = self.getDist(self.allLocs[0],loc)
+                else:
+                    legDist = self.getDist(self.route[-1],loc)
 
                 #If first run of loop, this dist becomes the min
                 if minDist == 0:
@@ -36,6 +42,9 @@ class GreedyBestFirst:
             self.route.append(closestLoc)
             self.allLocs.remove(closestLoc)
 
+        #Add start point to end of route
+        #self.route.append(route[0])
+
         return self.route
 
     def getDist(self,loc1,loc2):
@@ -43,13 +52,16 @@ class GreedyBestFirst:
         dist = haversine(loc1,loc2,unit="m")
         #print(length)
         return dist
-
+'''
 #Test
-route = [[6,5]]
-allLocs = [[1,6],[7,8],[1,7],[7,5],[3,0]]
 
-GBF = GreedyBestFirst(allLocs,route)
+route = [[57.152910, -2.107126]]
+testDB = db.DBHandler("aberdeen.sqlite3")
+locData = testDB.getLocs()
+
+GBF = GreedyBestFirst(locData)
 route = GBF.routeFinder()
 
 #self.route = self.routeFinder(self.allLocs,self.route)
 print(f"Shortest route:\n{route}")
+'''

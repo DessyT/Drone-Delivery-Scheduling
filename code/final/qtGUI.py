@@ -6,6 +6,7 @@ import db
 import HTMLGen
 import affinityPropagation
 import geneticAlgorithm
+import greedyBestFirst
 
 from PyQt5.QtWidgets import *
 
@@ -147,7 +148,6 @@ class SchedulerUI(QWidget):
                     noDrones = 5
                     self.txtNoDrones.setText("5")
 
-
                 #Get clusters
                 clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
                 clusters = clusterer.getClusters()
@@ -168,8 +168,15 @@ class SchedulerUI(QWidget):
             for cluster in clusters:
                 #Find a route
                 print("\nRoute {}".format(i + 1))
+                #GA
+
                 routeFinder = geneticAlgorithm.RouteFinder(cluster)
                 route = routeFinder.run()
+
+                '''#GBF
+                GBF = greedyBestFirst.GreedyBestFirst(cluster)
+                route = GBF.routeFinder()'''
+
                 #Plot the route
                 self.mapMaker.addAllLines(route,colours[i])
                 i += 1
@@ -177,7 +184,7 @@ class SchedulerUI(QWidget):
                 #Find the real length in km of each route
                 realLength = self.getRealLength(route)
                 lens.append(realLength)
-                #print("LEN",realLength,"km")
+                print(f"Total length = {realLength}km")
 
             print("\nRoutes completed succesfully\n")
 
@@ -232,7 +239,7 @@ class SchedulerUI(QWidget):
             #Cast to variable
             loc1 = (startLat,startLon)
             loc2 = (endLat,endLon)
-            print(loc1,loc2)
+            print(f"{loc1} --> {loc2}")
             #Find length in km
             dist = haversine(loc1,loc2)
 

@@ -85,6 +85,21 @@ class DBHandler:
 
         return data
 
+    def getLocs(self):
+
+        sql = "SELECT lat,lon FROM orders"
+        self.cur.execute(sql)
+        result = self.cur.fetchall()
+
+        #Convert tuple to list
+        data = []
+        for item in result:
+            str = list(item)
+            data.append(str)
+        #print(allData)
+
+        return data
+
     #Check if db is connected
     def checkStatus(self,path):
 
