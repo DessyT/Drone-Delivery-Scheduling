@@ -83,10 +83,15 @@ class SchedulerUI(QWidget):
         self.btnCreateDB.move(610,140)
         self.btnCreateDB.clicked.connect(self.btnCreateDBClicked)
 
-        self.combo = QComboBox(self)
-        self.combo.addItem("kMeans")
-        self.combo.addItem("Aff. Prop.")
-        self.combo.move(695,140)
+        self.drpCluster = QComboBox(self)
+        self.drpCluster.addItem("kMeans")
+        self.drpCluster.addItem("Aff. Prop.")
+        self.drpCluster.move(695,140)
+
+        self.drpSearch = QComboBox(self)
+        self.drpSearch.addItem("Genetic Algorithm")
+        self.drpSearch.addItem("Greedy Best First")
+        self.drpSearch.move(525,200)
 
         self.show()
 
@@ -135,9 +140,11 @@ class SchedulerUI(QWidget):
             #Get data from DB
             locsTimes = self.database.getLocsTime()
 
-            #Find which clustering algorithm to use
-            algorithm = self.combo.currentIndex()
-            if algorithm == 0:
+            #Find which clustering and search algorithms to use
+            clusterAlg = self.drpCluster.currentIndex()
+            searchAlg = self.drpSearch.currentIndex()
+
+            if clusterAlg == 0:
                 ''' KMEANS '''
                 #Get number of drones from textbox and validate > 0
                 #Defaults to 5 drones if no input or invalid
@@ -168,14 +175,16 @@ class SchedulerUI(QWidget):
             for cluster in clusters:
                 #Find a route
                 print("\nRoute {}".format(i + 1))
-                #GA
 
-                routeFinder = geneticAlgorithm.RouteFinder(cluster)
-                route = routeFinder.run()
-
-                '''#GBF
-                GBF = greedyBestFirst.GreedyBestFirst(cluster)
-                route = GBF.routeFinder()'''
+                #Select search algorith we want
+                if searchAlg == 0:
+                    #GA
+                    routeFinder = geneticAlgorithm.RouteFinder(cluster)
+                    route = routeFinder.run()
+                else:
+                    #GBF
+                    GBF = greedyBestFirst.GreedyBestFirst(cluster)
+                    route = GBF.routeFinder()
 
                 #Plot the route
                 self.mapMaker.addAllLines(route,colours[i])
