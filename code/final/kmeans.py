@@ -44,6 +44,8 @@ class KMeansClusters:
             #Append the depot if its not there already
             if not [57.152910, -2.107126,1578318631] in self.cluster:
                 self.cluster.append([57.152910, -2.107126,1578318631])
+                print(f"test cluster = \n{self.cluster}")
+
             #self.cluster.append([57.152910, -2.107126,1578318631])
             self.clusters.append(self.cluster)
 

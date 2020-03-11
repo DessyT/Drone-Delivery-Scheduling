@@ -168,6 +168,104 @@ class SchedulerUI(QWidget):
 
             #List of colours for output
             colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
+
+            maxLen = 5
+            routes = []
+            tempClusters = []
+            allPossible = False
+            count = 0
+            while allPossible == False:
+                count = 0
+                routes = []
+                tempClusters = []
+                impossibleRoutes = []
+                i = 0
+
+                print("Finding clusters and routes..\n")
+                print(f"{len(clusters)} clusters")
+
+                for cluster in clusters:
+                    #Find a route
+                    print("\nRoute {}".format(i + 1))
+
+                    #Select search algorith we want
+                    if searchAlg == 0:
+                        #GA
+                        routeFinder = geneticAlgorithm.RouteFinder(cluster)
+                        route = routeFinder.run()
+                    else:
+                        #GBF
+                        GBF = greedyBestFirst.GreedyBestFirst(cluster)
+                        route = GBF.routeFinder()
+
+                    #Get real length
+                    realLength = self.getRealLength(route)
+                    print(f"REALLEN {realLength}")
+
+                    #If the route is too long we split it in 2 and append to temp array
+                    #After every route is found, clusters becomes temp clusters
+                    if realLength > maxLen:
+
+                        #Spaghetti code
+                        if [57.152910, -2.107126,1578318631] in cluster:
+                            cluster.remove([57.152910, -2.107126,1578318631])
+
+                        #Split into 2 clusters
+                        clusterer = kmeans.KMeansClusters(cluster,2)
+                        supertempClusts = clusterer.getClusters()
+
+                        #Make sure we don't end here
+                        count += 1
+                        #If there is only 1 cluster returned the route is direct and thus impossible
+                        if len(supertempClusts) == 1:
+                            tempClusters.append(supertempClusts[0])
+                            routes.append(route)
+                            #Just report it for now
+                            impossibleRoutes.append(route)
+                        else:
+                            #Otherwise append new clusters
+                            tempClusters.append(supertempClusts[0])
+                            tempClusters.append(supertempClusts[1])
+                    else:
+                        #If it's possible, just append
+                        tempClusters.append(cluster)
+                        routes.append(route)
+
+                    #For colours
+                    i += 1
+
+
+                if len(clusters) == len(tempClusters):
+                    count = 0
+
+                print(f"Original = {len(clusters)}\nNew = {len(tempClusters)}")
+                #Assign new array to loop array
+                clusters = tempClusters
+
+                #Exit condition
+                if count == 0:
+                    i = 0
+                    #Draw routes on map
+                    for route in routes:
+                        print(route)
+                        self.mapMaker.addAllLines(route,colours[i])
+                        i += 1
+
+                    if len(impossibleRoutes) != 0:
+                        print("Some routes aren't possible;")
+                        for route in impossibleRoutes:
+                            print(f"Route:\n{route}\n")
+
+                    #End loop
+                    allPossible = True
+
+            #Refresh map
+            self.view.load(QtCore.QUrl().fromLocalFile(self.path))
+
+
+
+
+            ''' WORKING
             i = 0
             print("Finding clusters and routes..\n")
             print("{} clusters needed".format(len(clusters)))
@@ -195,7 +293,7 @@ class SchedulerUI(QWidget):
                 lens.append(realLength)
                 print(f"Total length = {realLength}km")
 
-            print("\nRoutes completed succesfully\n")
+            print("\nRoutes completed succesfully\n")'''
 
             #Refresh the HTML to show changes
             self.view.load(QtCore.QUrl().fromLocalFile(self.path))
