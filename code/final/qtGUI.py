@@ -50,7 +50,7 @@ class SchedulerUI(QWidget):
         self.btnAdd.clicked.connect(self.btnAddClicked)
 
         self.lblMaxDist = QLabel(self)
-        self.lblMaxDist.setText("Max F Time:")
+        self.lblMaxDist.setText("Max Dist:")
         self.lblMaxDist.move(525,82)
 
         self.txtMaxDist = QLineEdit(self)
@@ -150,7 +150,6 @@ class SchedulerUI(QWidget):
                 #Defaults to 5 drones if no input or invalid
                 noDrones = int(self.txtNoDrones.text())
 
-                #Check its > 0
                 if noDrones <= 0:
                     noDrones = 5
                     self.txtNoDrones.setText("5")
@@ -169,7 +168,12 @@ class SchedulerUI(QWidget):
             #List of colours for output
             colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
 
-            maxLen = 5
+            maxLen = int(self.txtMaxDist.text())
+            #Default to 5 if we get invalid input
+            if maxLen <= 0:
+                maxLen = 5
+                self.txtMaxDist.setText("5")
+
             routes = []
             tempClusters = []
             allPossible = False
@@ -247,12 +251,11 @@ class SchedulerUI(QWidget):
                     i = 0
                     #Draw routes on map
                     for route in routes:
-                        print(route)
                         self.mapMaker.addAllLines(route,colours[i])
                         i += 1
 
                     if len(impossibleRoutes) != 0:
-                        print("Some routes aren't possible;")
+                        print("Some routes aren't possible due to their length:")
                         for route in impossibleRoutes:
                             print(f"Route:\n{route}\n")
 
@@ -260,42 +263,6 @@ class SchedulerUI(QWidget):
                     allPossible = True
 
             #Refresh map
-            self.view.load(QtCore.QUrl().fromLocalFile(self.path))
-
-
-
-
-            ''' WORKING
-            i = 0
-            print("Finding clusters and routes..\n")
-            print("{} clusters needed".format(len(clusters)))
-
-            for cluster in clusters:
-                #Find a route
-                print("\nRoute {}".format(i + 1))
-
-                #Select search algorith we want
-                if searchAlg == 0:
-                    #GA
-                    routeFinder = geneticAlgorithm.RouteFinder(cluster)
-                    route = routeFinder.run()
-                else:
-                    #GBF
-                    GBF = greedyBestFirst.GreedyBestFirst(cluster)
-                    route = GBF.routeFinder()
-
-                #Plot the route
-                self.mapMaker.addAllLines(route,colours[i])
-                i += 1
-
-                #Find the real length in km of each route
-                realLength = self.getRealLength(route)
-                lens.append(realLength)
-                print(f"Total length = {realLength}km")
-
-            print("\nRoutes completed succesfully\n")'''
-
-            #Refresh the HTML to show changes
             self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
     #Add button functionality
