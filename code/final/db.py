@@ -92,7 +92,7 @@ class DBHandler:
         result = self.cur.fetchall()
         data = list(result[0])
 
-        return result
+        return data
 
     def getLocs(self):
 

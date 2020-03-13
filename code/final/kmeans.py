@@ -53,8 +53,8 @@ class KMeansClusters:
     def addNewToCluster(self,newLoc):
 
         #Get the closest cluster integer
-        newLocList = list(newLoc[0])
-        coords = newLocList[:-1]
+        #newLocList = list(newLoc[0])
+        coords = newLoc[:-1]
 
         #Needs a 2d array
         coords2d = []
@@ -67,7 +67,7 @@ class KMeansClusters:
 
         #Get cluster and append location
         newCluster = self.clusters[element]
-        newCluster.append(newLocList)
+        newCluster.append(newLoc)
 
         #Return
         return newCluster
