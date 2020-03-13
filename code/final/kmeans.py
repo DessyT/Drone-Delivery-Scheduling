@@ -20,7 +20,6 @@ class KMeansClusters:
         #Catch if number of drones is > customers
         #If so, just give each customer their own drone
         if self.noClusters > len(self.coords):
-            print("Drones > Locations")
             self.noClusters = len(self.coords)
             self.kmeans = KMeans(n_clusters=self.noClusters, random_state=0).fit(self.coords)
         else:
@@ -44,14 +43,34 @@ class KMeansClusters:
             #Append the depot if its not there already
             if not [57.152910, -2.107126,1578318631] in self.cluster:
                 self.cluster.append([57.152910, -2.107126,1578318631])
-                print(f"test cluster = \n{self.cluster}")
 
             #self.cluster.append([57.152910, -2.107126,1578318631])
             self.clusters.append(self.cluster)
 
         return self.clusters
 
-        #return None
+    #To add new a location to an existing cluster
+    def addNewToCluster(self,newLoc):
+
+        #Get the closest cluster integer
+        newLocList = list(newLoc[0])
+        coords = newLocList[:-1]
+
+        #Needs a 2d array
+        coords2d = []
+        coords2d.append(coords)
+        closestCluster = self.kmeans.predict(coords2d)
+
+        print(f"New location is closest to cluster {closestCluster.item(0)}")
+        #Point to correct cluster
+        element = closestCluster.item(0) - 1
+
+        #Get cluster and append location
+        newCluster = self.clusters[element]
+        newCluster.append(newLocList)
+
+        #Return
+        return newCluster
 
 '''
 #Testing with DB. Need to get data first
@@ -68,4 +87,7 @@ for cluster in clusters:
 
     #test = geneticAlgorithm.RouteFinder(herp)
     #print(test.run())
-'''
+
+newLoc = testDB.getNewestItem()
+clust = test.addNewToCluster(newLoc)
+print(clust)'''

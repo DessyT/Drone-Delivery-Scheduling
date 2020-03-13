@@ -85,6 +85,15 @@ class DBHandler:
 
         return data
 
+    def getNewestItem(self):
+
+        sql = "SELECT lat, lon, time FROM orders ORDER BY id DESC LIMIT 1"
+        self.cur.execute(sql)
+        result = self.cur.fetchall()
+        data = list(result[0])
+
+        return result
+
     def getLocs(self):
 
         sql = "SELECT lat,lon FROM orders"
