@@ -27,6 +27,10 @@ class SchedulerUI(QWidget):
         self.mapMaker = HTMLGen.MapMaker()
         self.path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
         self.dbOpenFlag = False
+
+        #List of colours for output
+        self.colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
+
         self.initUI()
 
     #Setup out main window GUI
@@ -142,7 +146,7 @@ class SchedulerUI(QWidget):
 
             #Find which clustering and search algorithms to use
             clusterAlg = self.drpCluster.currentIndex()
-            searchAlg = self.drpSearch.currentIndex()
+            self.searchAlg = self.drpSearch.currentIndex()
 
             if clusterAlg == 0:
                 ''' KMEANS '''
@@ -155,8 +159,8 @@ class SchedulerUI(QWidget):
                     self.txtNoDrones.setText("5")
 
                 #Get clusters
-                clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
-                clusters = clusterer.getClusters()
+                self.clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
+                clusters = self.clusterer.getClusters()
             else:
                 ''' Affinity Propagation '''
                 clusterer = affinityPropagation.APClusters(locsTimes)
@@ -165,22 +169,19 @@ class SchedulerUI(QWidget):
             #For holding all lengths
             lens = []
 
-            #List of colours for output
-            colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
-
             maxLen = int(self.txtMaxDist.text())
             #Default to 5 if we get invalid input
             if maxLen <= 0:
                 maxLen = 5
                 self.txtMaxDist.setText("5")
 
-            routes = []
+            self.routes = []
             tempClusters = []
             allPossible = False
             count = 0
             while allPossible == False:
                 count = 0
-                routes = []
+                self.routes = []
                 tempClusters = []
                 impossibleRoutes = []
                 i = 0
@@ -193,7 +194,7 @@ class SchedulerUI(QWidget):
                     print("\nRoute {}".format(i + 1))
 
                     #Select search algorith we want
-                    if searchAlg == 0:
+                    if self.searchAlg == 0:
                         #GA
                         routeFinder = geneticAlgorithm.RouteFinder(cluster)
                         route = routeFinder.run()
@@ -215,15 +216,15 @@ class SchedulerUI(QWidget):
                             cluster.remove([57.152910, -2.107126,1578318631])
 
                         #Split into 2 clusters
-                        clusterer = kmeans.KMeansClusters(cluster,2)
-                        supertempClusts = clusterer.getClusters()
+                        tempClusterer = kmeans.KMeansClusters(cluster,2)
+                        supertempClusts = tempClusterer.getClusters()
 
                         #Make sure we don't end here
                         count += 1
                         #If there is only 1 cluster returned the route is direct and thus impossible
                         if len(supertempClusts) == 1:
                             tempClusters.append(supertempClusts[0])
-                            routes.append(route)
+                            self.routes.append(route)
                             #Just report it for now
                             impossibleRoutes.append(route)
                         else:
@@ -233,12 +234,12 @@ class SchedulerUI(QWidget):
                     else:
                         #If it's possible, just append
                         tempClusters.append(cluster)
-                        routes.append(route)
+                        self.routes.append(route)
 
                     #For colours
                     i += 1
 
-
+                #Make sure we exit when we stop finding new clusters
                 if len(clusters) == len(tempClusters):
                     count = 0
 
@@ -250,8 +251,8 @@ class SchedulerUI(QWidget):
                 if count == 0:
                     i = 0
                     #Draw routes on map
-                    for route in routes:
-                        self.mapMaker.addAllLines(route,colours[i])
+                    for route in self.routes:
+                        self.mapMaker.addAllLines(route,self.colours[i])
                         i += 1
 
                     if len(impossibleRoutes) != 0:
@@ -286,6 +287,44 @@ class SchedulerUI(QWidget):
                 #Add item to db
                 self.database.addItem(item)
                 print("Item added",item)
+
+                #Now find closest cluster, get route, show on map
+                newLoc = self.database.getNewestItem()
+                newCluster,oldCluster = self.clusterer.addNewToCluster(newLoc)
+
+                if self.searchAlg == 0:
+                    #GA
+                    routeFinder = geneticAlgorithm.RouteFinder(oldCluster)
+                    oldRoute = routeFinder.run()
+                else:
+                    #GBF
+                    GBF = greedyBestFirst.GreedyBestFirst(newCluster)
+                    route = GBF.routeFinder()
+
+                #Search location
+                searchLoc = newCluster[0][0]
+
+                #Loop through all items in self.routes to find a matching location
+                #Once we find it, replace the whole route with the new one
+                #print(f"Len = {len(self.routes)}\nLen[0] = {len(self.routes[0])}\n")
+                for i in range(len(self.routes)):
+                    for j in range(len(self.routes[0])):
+                        print(f"i = {i}\nj = {j}")
+                        print(f"self.routes[i][j] = {self.routes[i][j]}")
+                        print(f"Searchloc = {searchLoc}")
+                        if self.routes[i][j][0] == searchLoc:
+                            print(f"Found {self.routes[i]}")
+                            self.routes[i] = route
+                            print(f"Replaced with {self.routes[i]}")
+
+                #Now refresh the map
+                i = 0
+                #Draw routes on map
+                for route in self.routes:
+                    self.mapMaker.addAllLines(route,self.colours[i])
+                    i += 1
+
+                self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
     #Quit button functionality
     def btnQuitClicked(self):

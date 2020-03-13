@@ -66,11 +66,11 @@ class KMeansClusters:
         element = closestCluster.item(0) - 1
 
         #Get cluster and append location
-        newCluster = self.clusters[element]
+        oldCluster = self.clusters[element]
+        newCluster = oldCluster
         newCluster.append(newLoc)
-
         #Return
-        return newCluster
+        return newCluster, oldCluster
 
 '''
 #Testing with DB. Need to get data first
@@ -89,5 +89,8 @@ for cluster in clusters:
     #print(test.run())
 
 newLoc = testDB.getNewestItem()
-clust = test.addNewToCluster(newLoc)
-print(clust)'''
+new,old = test.addNewToCluster(newLoc)
+print(new)
+searchLoc = new[0][0]
+print(searchLoc)
+'''
