@@ -61,16 +61,17 @@ class KMeansClusters:
         coords2d.append(coords)
         closestCluster = self.kmeans.predict(coords2d)
 
-        print(f"New location is closest to cluster {closestCluster.item(0)}")
+        print(f"New location is closest to cluster {closestCluster.item(0)}\n")
         #Point to correct cluster
-        element = closestCluster.item(0) - 1
+        element = closestCluster.item(0)
 
         #Get cluster and append location
         oldCluster = self.clusters[element]
+        print(f"OLDCLUSTER = {oldCluster}\n")
         newCluster = oldCluster
         newCluster.append(newLoc)
         #Return
-        return newCluster, oldCluster
+        return newCluster
 
 '''
 #Testing with DB. Need to get data first
@@ -82,15 +83,14 @@ test = KMeansClusters(locData,15)
 clusters = test.getClusters()
 i = 0
 for cluster in clusters:
-    i += 1
-    print("Cluster:",i,cluster)
 
+    print("Cluster:",i,cluster)
+    i += 1
     #test = geneticAlgorithm.RouteFinder(herp)
     #print(test.run())
 
 newLoc = testDB.getNewestItem()
-new,old = test.addNewToCluster(newLoc)
+new = test.addNewToCluster(newLoc)
 print(new)
 searchLoc = new[0][0]
-print(searchLoc)
-'''
+print(searchLoc)'''

@@ -290,7 +290,9 @@ class SchedulerUI(QWidget):
 
                 #Now find closest cluster, get route, show on map
                 newLoc = self.database.getNewestItem()
-                newCluster,oldCluster = self.clusterer.addNewToCluster(newLoc)
+                print(f"NEWLOC = {newLoc}\n")
+                newCluster = self.clusterer.addNewToCluster(newLoc)
+                print(f"NEWCLUST = {newCluster}\n")
 
                 if self.searchAlg == 0:
                     #GA
@@ -303,19 +305,50 @@ class SchedulerUI(QWidget):
 
                 #Search location
                 searchLoc = newCluster[0][0]
-
+                print(f"ROUTE = {route}\n")
                 #Loop through all items in self.routes to find a matching location
                 #Once we find it, replace the whole route with the new one
-                #print(f"Len = {len(self.routes)}\nLen[0] = {len(self.routes[0])}\n")
+                print(f"Len = {len(self.routes)}\nLen[0] = {len(self.routes[0])}\n")
+                print(f"Searchloc = {searchLoc}\n")
+                itemFoundFlag = False
+
                 for i in range(len(self.routes)):
-                    for j in range(len(self.routes[0])):
-                        print(f"i = {i}\nj = {j}")
-                        print(f"self.routes[i][j] = {self.routes[i][j]}")
-                        print(f"Searchloc = {searchLoc}")
-                        if self.routes[i][j][0] == searchLoc:
+
+                    for location in self.routes[i]:
+
+                        if searchLoc in location:
+                            print(f"Found {self.routes[i]}\nLen {len(self.routes[i])}")
+                            self.routes[i] = route
+                            print(f"Replaced with {self.routes[i]}\nLen {len(self.routes[i])}")
+
+                            itemFoundFlag = True
+                            break
+
+                            '''
+                        if searchLoc == item:
                             print(f"Found {self.routes[i]}")
                             self.routes[i] = route
                             print(f"Replaced with {self.routes[i]}")
+
+                            itemFoundFlag = True
+                            break'''
+
+                    '''for j in range(len(self.routes[0])):
+                        print(f"i = {i}\nj = {j}")
+                        print(f"self.routes[j][i] = {self.routes[j][i]}\n")
+
+                        if searchLoc in self.routes[j][i]:
+                            print(f"Found {self.routes[i]}")
+                            self.routes[i] = route
+                            print(f"Replaced with {self.routes[i]}")
+
+                            itemFoundFlag = True
+                            break'''
+                        #if self.routes[i][j][0] == searchLoc:
+
+
+                    if itemFoundFlag: break
+
 
                 #Now refresh the map
                 i = 0
