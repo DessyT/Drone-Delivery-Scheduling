@@ -193,7 +193,7 @@ class SchedulerUI(QWidget):
                     #Find a route
                     print("\nRoute {}".format(i + 1))
 
-                    #Select search algorith we want
+                    #Select search algorithm we want
                     if self.searchAlg == 0:
                         #GA
                         routeFinder = geneticAlgorithm.RouteFinder(cluster)
@@ -212,6 +212,7 @@ class SchedulerUI(QWidget):
                     if realLength > maxLen:
 
                         #Spaghetti code
+
                         if [57.152910, -2.107126,1578318631] in cluster:
                             cluster.remove([57.152910, -2.107126,1578318631])
 
@@ -307,8 +308,10 @@ class SchedulerUI(QWidget):
 
                 #Now find closest cluster, get route, show on map
                 newLoc = self.database.getNewestItem()
-                newCluster = self.clusterer.addNewToCluster(newLoc)
-                print(f"NEWCLUST = {newCluster}\n")
+                getNew = self.clusterer.addNewToCluster(newLoc)
+                oldCluster = getNew[0]
+                newCluster = getNew[1]
+                print(f"OLDCLUSTER = {oldCluster}\nNEWCLUST = {newCluster}\n")
 
                 if self.searchAlg == 0:
                     #GA
@@ -321,10 +324,27 @@ class SchedulerUI(QWidget):
 
                 #Search location
                 searchLoc = newCluster[0][0]
+                #Don't search on the depot
+                if searchLoc == 57.15291:
+                    searchLoc = newCluster[1][0]
                 #Loop through all items in self.routes to find a matching location
                 #Once we find it, replace the whole route with the new one
                 #For breaking once we find a match
                 itemFoundFlag = False
+
+                '''                for i in range(len(self.routes)):
+                    if self.routes[i] == oldCluster:
+                        self.routes[i] == newCluster
+                        print("FOUND IT WOO BABY")
+                        break'''
+
+
+                '''                for location in self.routes:
+                    if location == oldCluster:
+                        location = newCluster
+                        break'''
+
+
 
                 #Loop through all lat lon pairs
                 for i in range(len(self.routes)):
@@ -334,6 +354,7 @@ class SchedulerUI(QWidget):
                             print(f"Old = {self.routes[i]}\nNew = {route}")
                             print(f"lens old = {len(self.routes[i])}\nNew = {len(route)}")
                             self.routes[i] = route
+                            print("WE GOT HIM")
 
                             #Escaping
                             itemFoundFlag = True

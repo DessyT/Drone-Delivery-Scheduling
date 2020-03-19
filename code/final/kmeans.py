@@ -41,8 +41,8 @@ class KMeansClusters:
                     self.cluster.append(self.locTimes[j])
 
             #Append the depot if its not there already
-            if not [57.152910, -2.107126,1578318631] in self.cluster:
-                self.cluster.append([57.152910, -2.107126,1578318631])
+            if not [57.152910, -2.107126, 1578318631] in self.cluster:
+                self.cluster.append([57.152910, -2.107126, 1578318631])
 
             #self.cluster.append([57.152910, -2.107126,1578318631])
             self.clusters.append(self.cluster)
@@ -65,15 +65,24 @@ class KMeansClusters:
         #Point to correct cluster
         element = closestCluster.item(0)
 
+        clusters = []
+
         #Get cluster and append location
-        oldCluster = self.clusters[element]
+        oldCluster = list(self.clusters[element])
         print(f"OLD {oldCluster}\n")
-        newCluster = oldCluster
+        clusters.append(oldCluster)
+        newCluster = list(self.clusters[element])
         print(f"NEW {newCluster}\n")
+
         newCluster.append(newLoc)
+        print(f"OLD 2 {oldCluster}\n")
         print(f"NEW 2 {newCluster}\n")
+        clusters.append(newCluster)
+
+        print(f"WTF IS GOING ON?\n{clusters}")
+
         #Return
-        return newCluster
+        return clusters
 '''
 POSSIBLE SOLUTION
 IF THE NEW LOC IS BETWEEN 2 CLUSTERS, DOES addNewToCluster
