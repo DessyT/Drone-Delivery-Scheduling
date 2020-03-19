@@ -69,25 +69,16 @@ class KMeansClusters:
 
         #Get cluster and append location
         oldCluster = list(self.clusters[element])
-        print(f"OLD {oldCluster}\n")
-        clusters.append(oldCluster)
         newCluster = list(self.clusters[element])
-        print(f"NEW {newCluster}\n")
-
         newCluster.append(newLoc)
-        print(f"OLD 2 {oldCluster}\n")
-        print(f"NEW 2 {newCluster}\n")
-        clusters.append(newCluster)
 
-        print(f"WTF IS GOING ON?\n{clusters}")
+        #Add to return list
+        clusters.append(oldCluster)
+        clusters.append(newCluster)
 
         #Return
         return clusters
-'''
-POSSIBLE SOLUTION
-IF THE NEW LOC IS BETWEEN 2 CLUSTERS, DOES addNewToCluster
-RETURN 2 CLUSTERS?
-'''
+
 '''
 #Testing with DB. Need to get data first
 testDB = db.DBHandler("aberdeen.sqlite3")

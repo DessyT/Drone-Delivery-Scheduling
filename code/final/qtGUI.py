@@ -289,29 +289,12 @@ class SchedulerUI(QWidget):
                 self.database.addItem(item)
                 print("Item added",item)
 
-                '''TESTING 
-                locsTimes = self.database.getLocsTime()
-                noDrones = int(self.txtNoDrones.text())
-
-                noDrones = int(self.txtNoDrones.text())
-
-                if noDrones <= 0:
-                    noDrones = 5
-                    self.txtNoDrones.setText("5")
-
-                #Get clusters
-                self.clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
-                clusters = self.clusterer.getClusters()
-
-                 END TESTING DOESNT WORK'''
-
-
                 #Now find closest cluster, get route, show on map
                 newLoc = self.database.getNewestItem()
                 getNew = self.clusterer.addNewToCluster(newLoc)
                 oldCluster = getNew[0]
                 newCluster = getNew[1]
-                print(f"OLDCLUSTER = {oldCluster}\nNEWCLUST = {newCluster}\n")
+                #print(f"OLDCLUSTER = {oldCluster}\nNEWCLUST = {newCluster}\n")
 
                 if self.searchAlg == 0:
                     #GA
@@ -332,29 +315,15 @@ class SchedulerUI(QWidget):
                 #For breaking once we find a match
                 itemFoundFlag = False
 
-                '''                for i in range(len(self.routes)):
-                    if self.routes[i] == oldCluster:
-                        self.routes[i] == newCluster
-                        print("FOUND IT WOO BABY")
-                        break'''
-
-
-                '''                for location in self.routes:
-                    if location == oldCluster:
-                        location = newCluster
-                        break'''
-
-
-
                 #Loop through all lat lon pairs
                 for i in range(len(self.routes)):
                     for location in self.routes[i]:
                         #If we find it, this location becomes the new route
                         if searchLoc in location:
-                            print(f"Old = {self.routes[i]}\nNew = {route}")
-                            print(f"lens old = {len(self.routes[i])}\nNew = {len(route)}")
+                            #print(f"Old = {self.routes[i]}\nNew = {route}")
+                            #print(f"lens old = {len(self.routes[i])}\nNew = {len(route)}")
                             self.routes[i] = route
-                            print("WE GOT HIM")
+                            #print("WE GOT HIM")
 
                             #Escaping
                             itemFoundFlag = True
