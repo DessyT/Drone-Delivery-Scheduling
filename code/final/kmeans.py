@@ -79,7 +79,7 @@ POSSIBLE SOLUTION
 IF THE NEW LOC IS BETWEEN 2 CLUSTERS, DOES addNewToCluster
 RETURN 2 CLUSTERS?
 '''
-
+'''
 #Testing with DB. Need to get data first
 testDB = db.DBHandler("aberdeen.sqlite3")
 locData = testDB.getLocsTime()
@@ -97,4 +97,4 @@ for cluster in clusters:
 
 newLoc = testDB.getNewestItem()
 new = test.addNewToCluster(newLoc)
-print(new)
+print(new)'''

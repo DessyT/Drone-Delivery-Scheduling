@@ -1,5 +1,6 @@
 import folium
 import db
+import os
 
 class MapMaker:
     def __init__(self):
@@ -7,7 +8,8 @@ class MapMaker:
         #My flat self.map = folium.Map(location = [57.151954, -2.091723], width=500, height=500, zoom_start=15)
         self.map = folium.Map(location = [57.152910, -2.107126], width=500, height=500, zoom_start=13)
         self.map.add_child(folium.LatLngPopup())
-        self.routedPath = "html/routedMap.html"
+        #self.routedPath = "html/routedMap.html"
+        self.routedPath = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
         #To create a new one if we need self.map.save("html/baseMap.html")
 
     #Add a single line between two points

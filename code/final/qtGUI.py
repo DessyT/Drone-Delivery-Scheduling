@@ -288,7 +288,7 @@ class SchedulerUI(QWidget):
                 self.database.addItem(item)
                 print("Item added",item)
 
-                '''TESTING '''
+                '''TESTING 
                 locsTimes = self.database.getLocsTime()
                 noDrones = int(self.txtNoDrones.text())
 
@@ -299,15 +299,15 @@ class SchedulerUI(QWidget):
                     self.txtNoDrones.setText("5")
 
                 #Get clusters
-                clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
-                clusters = clusterer.getClusters()
+                self.clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
+                clusters = self.clusterer.getClusters()
 
-                ''' END TESTING DOESNT WORK'''
+                 END TESTING DOESNT WORK'''
 
 
                 #Now find closest cluster, get route, show on map
                 newLoc = self.database.getNewestItem()
-                newCluster = clusterer.addNewToCluster(newLoc)
+                newCluster = self.clusterer.addNewToCluster(newLoc)
                 print(f"NEWCLUST = {newCluster}\n")
 
                 if self.searchAlg == 0:
