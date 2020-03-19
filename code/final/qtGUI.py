@@ -104,10 +104,10 @@ class SchedulerUI(QWidget):
 
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
-        if fileName:
+        self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
+        if self.fileName:
             #Get db object
-            self.database = db.DBHandler(fileName+".sqlite3")
+            self.database = db.DBHandler(self.fileName+".sqlite3")
             #Create table if it doesn't exist
             self.database.createTable()
             #Allow db operations
@@ -118,10 +118,10 @@ class SchedulerUI(QWidget):
 
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
-        if fileName:
+        self.fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
+        if self.fileName:
             #Get db object
-            self.database = db.DBHandler(fileName)
+            self.database = db.DBHandler(self.fileName)
             #Create table if it doesn't exist
             self.database.createTable()
 
@@ -264,7 +264,7 @@ class SchedulerUI(QWidget):
                     allPossible = True
 
             #Refresh map
-            self.view.load(QtCore.QUrl().fromLocalFile(self.path))
+            self.refreshMap()
 
     #Add button functionality
     def btnAddClicked(self):
@@ -288,16 +288,32 @@ class SchedulerUI(QWidget):
                 self.database.addItem(item)
                 print("Item added",item)
 
+                '''TESTING '''
+                locsTimes = self.database.getLocsTime()
+                noDrones = int(self.txtNoDrones.text())
+
+                noDrones = int(self.txtNoDrones.text())
+
+                if noDrones <= 0:
+                    noDrones = 5
+                    self.txtNoDrones.setText("5")
+
+                #Get clusters
+                clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
+                clusters = clusterer.getClusters()
+
+                ''' END TESTING DOESNT WORK'''
+
+
                 #Now find closest cluster, get route, show on map
                 newLoc = self.database.getNewestItem()
-                print(f"NEWLOC = {newLoc}\n")
-                newCluster = self.clusterer.addNewToCluster(newLoc)
+                newCluster = clusterer.addNewToCluster(newLoc)
                 print(f"NEWCLUST = {newCluster}\n")
 
                 if self.searchAlg == 0:
                     #GA
-                    routeFinder = geneticAlgorithm.RouteFinder(oldCluster)
-                    oldRoute = routeFinder.run()
+                    routeFinder = geneticAlgorithm.RouteFinder(newCluster)
+                    route = routeFinder.run()
                 else:
                     #GBF
                     GBF = greedyBestFirst.GreedyBestFirst(newCluster)
@@ -305,59 +321,45 @@ class SchedulerUI(QWidget):
 
                 #Search location
                 searchLoc = newCluster[0][0]
-                print(f"ROUTE = {route}\n")
                 #Loop through all items in self.routes to find a matching location
                 #Once we find it, replace the whole route with the new one
-                print(f"Len = {len(self.routes)}\nLen[0] = {len(self.routes[0])}\n")
-                print(f"Searchloc = {searchLoc}\n")
+                #For breaking once we find a match
                 itemFoundFlag = False
 
+                #Loop through all lat lon pairs
                 for i in range(len(self.routes)):
-
                     for location in self.routes[i]:
-
+                        #If we find it, this location becomes the new route
                         if searchLoc in location:
-                            print(f"Found {self.routes[i]}\nLen {len(self.routes[i])}")
+                            print(f"Old = {self.routes[i]}\nNew = {route}")
+                            print(f"lens old = {len(self.routes[i])}\nNew = {len(route)}")
                             self.routes[i] = route
-                            print(f"Replaced with {self.routes[i]}\nLen {len(self.routes[i])}")
 
+                            #Escaping
                             itemFoundFlag = True
                             break
 
-                            '''
-                        if searchLoc == item:
-                            print(f"Found {self.routes[i]}")
-                            self.routes[i] = route
-                            print(f"Replaced with {self.routes[i]}")
-
-                            itemFoundFlag = True
-                            break'''
-
-                    '''for j in range(len(self.routes[0])):
-                        print(f"i = {i}\nj = {j}")
-                        print(f"self.routes[j][i] = {self.routes[j][i]}\n")
-
-                        if searchLoc in self.routes[j][i]:
-                            print(f"Found {self.routes[i]}")
-                            self.routes[i] = route
-                            print(f"Replaced with {self.routes[i]}")
-
-                            itemFoundFlag = True
-                            break'''
-                        #if self.routes[i][j][0] == searchLoc:
-
-
+                    #Escaping
                     if itemFoundFlag: break
 
-
                 #Now refresh the map
-                i = 0
-                #Draw routes on map
-                for route in self.routes:
-                    self.mapMaker.addAllLines(route,self.colours[i])
-                    i += 1
+                self.refreshMap()
 
-                self.view.load(QtCore.QUrl().fromLocalFile(self.path))
+    def refreshMap(self):
+        #get new mapmaker instance
+        mapMaker = HTMLGen.MapMaker()
+
+        #Get all data for markers and plot
+        allData = self.database.getLocsItems()
+        mapMaker.addMarkers(allData)
+
+        i = 0
+        #Draw routes on map
+        for route in self.routes:
+            mapMaker.addAllLines(route,self.colours[i])
+            i += 1
+
+        self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
     #Quit button functionality
     def btnQuitClicked(self):

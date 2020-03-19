@@ -55,7 +55,7 @@ class KMeansClusters:
         #Get the closest cluster integer
         #newLocList = list(newLoc[0])
         coords = newLoc[:-1]
-
+        print(newLoc)
         #Needs a 2d array
         coords2d = []
         coords2d.append(coords)
@@ -67,19 +67,25 @@ class KMeansClusters:
 
         #Get cluster and append location
         oldCluster = self.clusters[element]
-        print(f"OLDCLUSTER = {oldCluster}\n")
+        print(f"OLD {oldCluster}\n")
         newCluster = oldCluster
+        print(f"NEW {newCluster}\n")
         newCluster.append(newLoc)
+        print(f"NEW 2 {newCluster}\n")
         #Return
         return newCluster
-
 '''
+POSSIBLE SOLUTION
+IF THE NEW LOC IS BETWEEN 2 CLUSTERS, DOES addNewToCluster
+RETURN 2 CLUSTERS?
+'''
+
 #Testing with DB. Need to get data first
 testDB = db.DBHandler("aberdeen.sqlite3")
 locData = testDB.getLocsTime()
 
 #Now get class and clusters
-test = KMeansClusters(locData,15)
+test = KMeansClusters(locData,8)
 clusters = test.getClusters()
 i = 0
 for cluster in clusters:
@@ -92,5 +98,3 @@ for cluster in clusters:
 newLoc = testDB.getNewestItem()
 new = test.addNewToCluster(newLoc)
 print(new)
-searchLoc = new[0][0]
-print(searchLoc)'''
