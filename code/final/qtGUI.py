@@ -162,6 +162,9 @@ class SchedulerUI(QWidget):
             clusterAlg = self.drpCluster.currentIndex()
             self.searchAlg = self.drpSearch.currentIndex()
 
+            #Get drone speed
+            self.droneSpeed = int(self.txtMaxSpeed.text())
+
             if clusterAlg == 0:
                 ''' KMEANS '''
                 #Get number of drones from textbox and validate > 0
@@ -210,15 +213,15 @@ class SchedulerUI(QWidget):
                     #Select search algorithm we want
                     if self.searchAlg == 0:
                         #GA
-                        routeFinder = geneticAlgorithm.RouteFinder(cluster)
+                        routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed)
                         route = routeFinder.run()
                     else:
                         #GBF
-                        GBF = greedyBestFirst.GreedyBestFirst(cluster)
+                        GBF = greedyBestFirst.GreedyBestFirst(cluster,self.droneSpeed)
                         route = GBF.routeFinder()
 
                     #Get real length
-                    realLength,realTime = self.getRealLength(route)
+                    realLength,realTime = self.getRealLengthTime(route)
                     print(f"Length of route: {realLength}km")
                     print(f"Time taken: {realTime}s")
 
@@ -372,7 +375,7 @@ class SchedulerUI(QWidget):
         sys.exit()
 
     #Calculates the actual length of each route in km
-    def getRealLength(self,route):
+    def getRealLengthTime(self,route):
 
         distanceTotal = 0
         timeTotal = 0
@@ -403,13 +406,12 @@ class SchedulerUI(QWidget):
             #Now get the time
             #Get flight bearing first
             bearing = self.bearingFinder.getBearing(loc1, loc2)
-            #Get drone speed
-            droneSpeed = int(self.txtMaxSpeed.text())
-            time = self.getFlightTime(dist,bearing,droneSpeed)
+
+            time = self.getFlightTime(dist,bearing,self.droneSpeed)
 
             timeTotal = timeTotal + time
 
-            print(f"{loc1} --> {loc2} Distance: {dist}km Time Taken: {time}s")
+            print(f"{loc1} --> {loc2} Distance: {round(dist,2)}km Time Taken: {round(time,2)}s")
 
         distanceTotal = round(distanceTotal,2)
         timeTotal = round(timeTotal,2)

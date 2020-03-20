@@ -3,14 +3,13 @@ import random
 import db
 import numpy as np
 import bearing
-
 import weatherdata
 import E6B
 from haversine import haversine, Unit
 
 #Class to perform a genetic search on given coordinates
 class RouteFinder:
-    def __init__(self,data):
+    def __init__(self,data,droneSpeed):
 
         self.ga = pyeasyga.GeneticAlgorithm(data,
                                     population_size=300,
@@ -30,7 +29,7 @@ class RouteFinder:
         self.windDir = weather.getWindDirection(57.1497,-2.0943)
         self.windSpeed = weather.getWindSpeed(57.1497,-2.0943)
         #Sample parameters
-        self.droneSpeed = 15
+        self.droneSpeed = droneSpeed
 
     #Calculate distance from one location to another using euclidean
     def distance(self,loc1,loc2):
@@ -119,10 +118,10 @@ class RouteFinder:
             #Thus GA should tend towards the longest waiting customer being at the front
             #Need to scale down the value so route length is still a factor
             #print("ROUTE",route[i])
-            time = route[i][2]
-            time = time/1000000000
+            unixTime = route[i][2]
+            unixTime = unixTime/1000000000
             #print("Wait score =",(time * i))
-            fitness += (time * i)
+            fitness += (unixTime * i)
 
             #print("Real LEN = ", self.getRealLength(loc1,loc2))
             #print("Real Bearing = ", self.getBearing(loc1,loc2))
