@@ -7,6 +7,11 @@ import HTMLGen
 import affinityPropagation
 import geneticAlgorithm
 import greedyBestFirst
+import bearing
+import E6B
+import weatherdata
+
+
 
 from PyQt5.QtWidgets import *
 
@@ -27,6 +32,8 @@ class SchedulerUI(QWidget):
         self.mapMaker = HTMLGen.MapMaker()
         self.path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
         self.dbOpenFlag = False
+        self.bearingFinder = bearing.BearingFinder()
+        self.e6b = E6B.E6B()
 
         #List of colours for output
         self.colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
@@ -53,19 +60,26 @@ class SchedulerUI(QWidget):
         self.btnAdd.move(525,170)
         self.btnAdd.clicked.connect(self.btnAddClicked)
 
-        self.lblMaxDist = QLabel(self)
-        self.lblMaxDist.setText("Max Dist:")
-        self.lblMaxDist.move(525,82)
-
-        self.txtMaxDist = QLineEdit(self)
-        self.txtMaxDist.move(610,80)
-
         self.lblNoDrones = QLabel(self)
         self.lblNoDrones.setText("Drones:")
         self.lblNoDrones.move(525,52)
 
         self.txtNoDrones = QLineEdit(self)
-        self.txtNoDrones.move(610,50)
+        self.txtNoDrones.move(660,50)
+
+        self.lblMaxTime = QLabel(self)
+        self.lblMaxTime.setText("Max Flight Time (s):")
+        self.lblMaxTime.move(525,82)
+
+        self.txtMaxTime = QLineEdit(self)
+        self.txtMaxTime.move(660,80)
+
+        self.lblMaxSpeed = QLabel(self)
+        self.lblMaxSpeed.setText("Flight Speed (m/s):")
+        self.lblMaxSpeed.move(525,112)
+
+        self.txtMaxSpeed = QLineEdit(self)
+        self.txtMaxSpeed.move(660,110)
 
         self.btnRun = QPushButton(self)
         self.btnRun.setText("Run")
@@ -169,17 +183,17 @@ class SchedulerUI(QWidget):
             #For holding all lengths
             lens = []
 
-            maxLen = int(self.txtMaxDist.text())
-            #Default to 5 if we get invalid input
-            if maxLen <= 0:
-                maxLen = 5
-                self.txtMaxDist.setText("5")
+            maxTime = int(self.txtMaxTime.text())
+            #Default to 300 if we get invalid input
+            if maxTime <= 0:
+                maxTime = 300
+                self.txtMaxTime.setText("300")
 
             self.routes = []
             tempClusters = []
             allPossible = False
             count = 0
-            while allPossible == False:
+            while not allPossible:
                 count = 0
                 self.routes = []
                 tempClusters = []
@@ -204,12 +218,13 @@ class SchedulerUI(QWidget):
                         route = GBF.routeFinder()
 
                     #Get real length
-                    realLength = self.getRealLength(route)
-                    print(f"REALLEN {realLength}")
+                    realLength,realTime = self.getRealLength(route)
+                    print(f"Length of route: {realLength}km")
+                    print(f"Time taken: {realTime}s")
 
                     #If the route is too long we split it in 2 and append to temp array
                     #After every route is found, clusters becomes temp clusters
-                    if realLength > maxLen:
+                    if realTime > maxTime:
 
                         #Spaghetti code
 
@@ -227,6 +242,7 @@ class SchedulerUI(QWidget):
                             tempClusters.append(supertempClusts[0])
                             self.routes.append(route)
                             #Just report it for now
+                            #TODO remove from map or alert customer is too far. Input validation on distance?
                             impossibleRoutes.append(route)
                         else:
                             #Otherwise append new clusters
@@ -271,7 +287,7 @@ class SchedulerUI(QWidget):
     def btnAddClicked(self):
 
         #Call our dialog box
-        if(self.dbOpenFlag == False):
+        if self.dbOpenFlag == False:
             QMessageBox.about(self,"Error","Load or create a database before adding")
         else:
             dlg = AddDialog()
@@ -358,7 +374,8 @@ class SchedulerUI(QWidget):
     #Calculates the actual length of each route in km
     def getRealLength(self,route):
 
-        total = 0
+        distanceTotal = 0
+        timeTotal = 0
         for i in range(len(route)):
             #Make sure we dont overflow
             if (i + 1) < len(route):
@@ -377,13 +394,40 @@ class SchedulerUI(QWidget):
             #Cast to variable
             loc1 = (startLat,startLon)
             loc2 = (endLat,endLon)
-            print(f"{loc1} --> {loc2}")
             #Find length in km
             dist = haversine(loc1,loc2)
 
-            total = total + dist
+            #Add to total
+            distanceTotal = distanceTotal + dist
 
-        return total
+            #Now get the time
+            #Get flight bearing first
+            bearing = self.bearingFinder.getBearing(loc1, loc2)
+            #Get drone speed
+            droneSpeed = int(self.txtMaxSpeed.text())
+            time = self.getFlightTime(dist,bearing,droneSpeed)
+
+            timeTotal = timeTotal + time
+
+            print(f"{loc1} --> {loc2} Distance: {dist}km Time Taken: {time}s")
+
+        distanceTotal = round(distanceTotal,2)
+        timeTotal = round(timeTotal,2)
+        return distanceTotal,timeTotal
+
+    def getFlightTime(self,distance,bearing,droneSpeed):
+
+        weather = weatherdata.WeatherData(57.1497,-2.0943)
+        windDir = weather.getWindDirection(57.1497,-2.0943)
+        windSpeed = weather.getWindSpeed(57.1497,-2.0943)
+
+        correctedDir, dir = self.e6b.getCorrectedDirection(windSpeed, windDir, bearing, droneSpeed)
+        speed = self.e6b.getCorrectedSpeed(windSpeed, windDir, bearing, droneSpeed, dir)
+
+        #Multiply by 1000 to get to metres
+        time = (distance * 1000) / speed
+
+        return time
 
 #New delivery input dialog
 class AddDialog(QDialog):

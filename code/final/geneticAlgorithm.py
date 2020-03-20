@@ -116,7 +116,7 @@ class RouteFinder:
 
             #Get score from order time.
             #Unix timestamp is multiplied by position in the queue.
-            #Thus GA should tend towards the longest wait being at the front
+            #Thus GA should tend towards the longest waiting customer being at the front
             #Need to scale down the value so route length is still a factor
             #print("ROUTE",route[i])
             time = route[i][2]
@@ -143,55 +143,6 @@ class RouteFinder:
         #print(bearing)
         return bearing
 
-        '''
-        lat1,lon1 = loc1[0],loc1[1]
-        lat2,lon2 = loc2[0],loc1[1]
-
-        print("LATS",lat1,lat2)
-        print("LONS",lon1,lon2)
-        bearing = Geodesic.WGS84.Inverse(lat1, lon2, lat2, lon2)["azi1"]
-        print("test",bearing)
-        return bearing
-        '''
-        '''
-        WORKS ON PC NOT LAPTOP
-        #Calculate the degree of travel
-        bearing = sphere.bearing(loc1,loc2)
-        print("BEARING",bearing)
-        return bearing
-        '''
-
-        '''
-        lat1,lon1 = loc1[0],loc1[1]
-        lat2,lon2 = loc2[0],loc1[1]
-
-        bearing = Geodesic.WGS84.Inverse(lat1, lon1, lat2, lon2)['azi2']
-        #bearing = Geodesic.WGS84.Inverse(-41.32, 174.81, 40.96, -5.50)['azi1']
-        print("brns",bearing)
-        return bearing
-        '''
-
-        '''
-        lat1,lon1 = loc1[0],loc1[1]
-        lat2,lon2 = loc2[0],loc1[1]
-        geodesic = pyproj.Geod(ellps='WGS84')
-        fwd_azimuth,back_azimuth,distance = geodesic.inv(lat1, lon1, lat2, lon2)
-        print("Bearing",fwd_azimuth)
-        return fwd_azimuth
-        '''
-
-        '''
-        #Get the difference between the wind direction and travel direction
-        difference = (bearing - self.windDir) % 360.0
-
-        #Normalise to +- 180
-        if difference >= 180:
-            difference -= 360
-
-        #Convert to positive if negative
-        difference = abs(difference) / 100
-
-        return difference'''
 
     #Assign all functions to ga and run
     def run(self):

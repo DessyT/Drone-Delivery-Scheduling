@@ -33,12 +33,12 @@ def window():
    btnAdd.move(600,50)
    btnAdd.clicked.connect(btnAddClicked)
 
-   lblMaxDist = QLabel(widget)
-   lblMaxDist.setText("Max Dist:")
-   lblMaxDist.move(600,83)
+   lblMaxTime = QLabel(widget)
+   lblMaxTime.setText("Max Dist:")
+   lblMaxTime.move(600,83)
 
-   txtMaxDist = QLineEdit(widget)
-   txtMaxDist.move(650,80)
+   txtMaxTime = QLineEdit(widget)
+   txtMaxTime.move(650,80)
 
    lblNoDrones = QLabel(widget)
    lblNoDrones.setText("Drones:")
