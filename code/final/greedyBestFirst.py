@@ -8,11 +8,12 @@ import os
 
 class GreedyBestFirst:
 
-    def __init__(self,allLocs,droneSpeed):
+    def __init__(self,allLocs,droneSpeed,windSpeed,windDir):
         print("Using greedy best first")
         self.allLocs = allLocs
         self.allLocs = [locs[:-1] for locs in allLocs]
         self.allTimes = [times[-1] for times in allLocs]
+        print(self.allLocs)
         #Starting location
         self.route = []
 
@@ -20,10 +21,9 @@ class GreedyBestFirst:
         self.e6b = E6B.E6B()
 
         #Get wind data
-        weather = weatherdata.WeatherData(57.1497,-2.0943)
-        self.windDir = weather.getWindDirection(57.1497,-2.0943)
-        self.windSpeed = weather.getWindSpeed(57.1497,-2.0943)
-        #Sample parameters
+        self.windDir = windDir
+        self.windSpeed = windSpeed
+        #Get drone speed
         self.droneSpeed = droneSpeed
 
     def routeFinder(self):
@@ -42,7 +42,8 @@ class GreedyBestFirst:
             for loc in self.allLocs:
 
                 #Distance from end of self.route to current loc
-                if len(self.route) == 0:
+                #if len(self.route) == 0:
+                if not self.route:
                     #legDist = self.getDist(self.allLocs[0],loc)
                     legScore = self.heuristic(self.allLocs[0],loc)
                 else:
@@ -53,10 +54,11 @@ class GreedyBestFirst:
                     bestScore = legScore
                     bestLoc = loc
                 elif legScore < bestScore:
+                    bestScore = legScore
                     bestLoc = loc
+            print(f"testing self.route {self.route}\n")
 
             #Append shortest distance and remove from available array
-            #print(f"testing self.route {self.route}\n")
             #print(f"testing closestLoc {closestLoc}\n")
             self.route.append(bestLoc)
             self.allLocs.remove(bestLoc)

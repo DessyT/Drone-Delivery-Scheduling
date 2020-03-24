@@ -34,6 +34,9 @@ class SchedulerUI(QWidget):
         self.dbOpenFlag = False
         self.bearingFinder = bearing.BearingFinder()
         self.e6b = E6B.E6B()
+        self.weather = weatherdata.WeatherData(57.1497,-2.0943)
+        self.windDir = self.weather.getWindDirection(57.1497,-2.0943)
+        self.windSpeed = self.weather.getWindSpeed(57.1497,-2.0943)
 
         #List of colours for output
         self.colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
@@ -217,7 +220,7 @@ class SchedulerUI(QWidget):
                         route = routeFinder.run()
                     else:
                         #GBF
-                        GBF = greedyBestFirst.GreedyBestFirst(cluster,self.droneSpeed)
+                        GBF = greedyBestFirst.GreedyBestFirst(cluster,self.droneSpeed,self.windSpeed,self.windDir)
                         route = GBF.routeFinder()
 
                     #Get real length
@@ -230,7 +233,6 @@ class SchedulerUI(QWidget):
                     if realTime > maxTime:
 
                         #Spaghetti code
-
                         if [57.152910, -2.107126,1578318631] in cluster:
                             cluster.remove([57.152910, -2.107126,1578318631])
 
@@ -425,17 +427,12 @@ class SchedulerUI(QWidget):
 
     def getFlightTime(self,distance,bearing,droneSpeed):
 
-        weather = weatherdata.WeatherData(57.1497,-2.0943)
-        windDir = weather.getWindDirection(57.1497,-2.0943)
-        windSpeed = weather.getWindSpeed(57.1497,-2.0943)
-
-        correctedDir, dir = self.e6b.getCorrectedDirection(windSpeed, windDir, bearing, droneSpeed)
-        speed = self.e6b.getCorrectedSpeed(windSpeed, windDir, bearing, droneSpeed, dir)
+        correctedDir, dir = self.e6b.getCorrectedDirection(self.windSpeed, self.windDir, bearing, droneSpeed)
+        speed = self.e6b.getCorrectedSpeed(self.windSpeed, self.windDir, bearing, droneSpeed, dir)
 
         #Multiply by 1000 to get to metres
         time = (distance * 1000) / speed
-        print(f"windDir = {windDir}\nwindSpeed = {windSpeed}\ndroneSpeed = {speed}")
-
+        #print(f"windDir = {windDir}\nwindSpeed = {windSpeed}\ndroneSpeed = {speed}")
 
         return time
 
