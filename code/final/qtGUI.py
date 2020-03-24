@@ -309,50 +309,56 @@ class SchedulerUI(QWidget):
                 print("Item added",item)
 
                 #Now find closest cluster, get route, show on map
+                #Inside try except block in case user hasn't used run function before add
                 newLoc = self.database.getNewestItem()
-                getNew = self.clusterer.addNewToCluster(newLoc)
-                oldCluster = getNew[0]
-                newCluster = getNew[1]
-                #print(f"OLDCLUSTER = {oldCluster}\nNEWCLUST = {newCluster}\n")
+                try:
+                    getNew = self.clusterer.addNewToCluster(newLoc)
+                    oldCluster = getNew[0]
+                    newCluster = getNew[1]
+                    # print(f"OLDCLUSTER = {oldCluster}\nNEWCLUST = {newCluster}\n")
 
-                if self.searchAlg == 0:
-                    #GA
-                    routeFinder = geneticAlgorithm.RouteFinder(newCluster)
-                    route = routeFinder.run()
-                else:
-                    #GBF
-                    GBF = greedyBestFirst.GreedyBestFirst(newCluster)
-                    route = GBF.routeFinder()
+                    if self.searchAlg == 0:
+                        # GA
+                        routeFinder = geneticAlgorithm.RouteFinder(newCluster)
+                        route = routeFinder.run()
+                    else:
+                        # GBF
+                        GBF = greedyBestFirst.GreedyBestFirst(newCluster)
+                        route = GBF.routeFinder()
 
-                #Search location
-                searchLoc = newCluster[0][0]
-                #Don't search on the depot
-                if searchLoc == 57.15291:
-                    searchLoc = newCluster[1][0]
-                #Loop through all items in self.routes to find a matching location
-                #Once we find it, replace the whole route with the new one
-                #For breaking once we find a match
-                itemFoundFlag = False
+                    # Search location
+                    searchLoc = newCluster[0][0]
+                    # Don't search on the depot
+                    if searchLoc == 57.15291:
+                        searchLoc = newCluster[1][0]
+                    # Loop through all items in self.routes to find a matching location
+                    # Once we find it, replace the whole route with the new one
+                    # For breaking once we find a match
+                    itemFoundFlag = False
 
-                #Loop through all lat lon pairs
-                for i in range(len(self.routes)):
-                    for location in self.routes[i]:
-                        #If we find it, this location becomes the new route
-                        if searchLoc in location:
-                            #print(f"Old = {self.routes[i]}\nNew = {route}")
-                            #print(f"lens old = {len(self.routes[i])}\nNew = {len(route)}")
-                            self.routes[i] = route
-                            #print("WE GOT HIM")
+                    # Loop through all lat lon pairs
+                    for i in range(len(self.routes)):
+                        for location in self.routes[i]:
+                            # If we find it, this location becomes the new route
+                            if searchLoc in location:
+                                # print(f"Old = {self.routes[i]}\nNew = {route}")
+                                # print(f"lens old = {len(self.routes[i])}\nNew = {len(route)}")
+                                self.routes[i] = route
+                                # print("WE GOT HIM")
 
-                            #Escaping
-                            itemFoundFlag = True
-                            break
+                                # Escaping
+                                itemFoundFlag = True
+                                break
 
-                    #Escaping
-                    if itemFoundFlag: break
+                        # Escaping
+                        if itemFoundFlag: break
 
-                #Now refresh the map
-                self.refreshMap()
+                    # Now refresh the map
+                    self.refreshMap()
+
+                except AttributeError:
+                    #Show item added alert
+                    QMessageBox.about(self, "Success", "Item added to database\nPress run to see it on the map!")
 
     def refreshMap(self):
         #get new mapmaker instance
@@ -428,6 +434,8 @@ class SchedulerUI(QWidget):
 
         #Multiply by 1000 to get to metres
         time = (distance * 1000) / speed
+        print(f"windDir = {windDir}\nwindSpeed = {windSpeed}\ndroneSpeed = {speed}")
+
 
         return time
 
