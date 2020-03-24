@@ -165,128 +165,134 @@ class SchedulerUI(QWidget):
             clusterAlg = self.drpCluster.currentIndex()
             self.searchAlg = self.drpSearch.currentIndex()
 
-            #Get drone speed
-            self.droneSpeed = int(self.txtMaxSpeed.text())
+            #Get parameters and validate them
+            speedBool,self.droneSpeed = self.validateParam(self.txtMaxSpeed.text())
+            timeBool,self.maxTime = self.validateParam(self.txtMaxTime.text())
+            dronesBool,self.noDrones = self.validateParam(self.txtNoDrones.text())
 
-            if clusterAlg == 0:
-                ''' KMEANS '''
-                #Get number of drones from textbox and validate > 0
-                #Defaults to 5 drones if no input or invalid
-                noDrones = int(self.txtNoDrones.text())
+            if speedBool == True and timeBool == True and dronesBool == True:
 
-                if noDrones <= 0:
-                    noDrones = 5
-                    self.txtNoDrones.setText("5")
+                if clusterAlg == 0:
+                    ''' KMEANS '''
+                    #Get number of drones from textbox and validate > 0
+                    #Defaults to 5 drones if no input or invalid
 
-                #Get clusters
-                self.clusterer = kmeans.KMeansClusters(locsTimes,noDrones)
-                clusters = self.clusterer.getClusters()
-            else:
-                ''' Affinity Propagation '''
-                clusterer = affinityPropagation.APClusters(locsTimes)
-                clusters = clusterer.getClusters()
+                    if self.noDrones <= 0:
+                        self.noDrones = 5
+                        self.txtNoDrones.setText("5")
 
-            #For holding all lengths
-            lens = []
+                    #Get clusters
+                    self.clusterer = kmeans.KMeansClusters(locsTimes,self.noDrones)
+                    clusters = self.clusterer.getClusters()
+                else:
+                    ''' Affinity Propagation '''
+                    clusterer = affinityPropagation.APClusters(locsTimes)
+                    clusters = clusterer.getClusters()
 
-            maxTime = int(self.txtMaxTime.text())
-            #Default to 300 if we get invalid input
-            if maxTime <= 0:
-                maxTime = 300
-                self.txtMaxTime.setText("300")
+                #For holding all lengths
+                lens = []
 
-            self.routes = []
-            tempClusters = []
-            allPossible = False
-            count = 0
-            while not allPossible:
-                count = 0
+                #Default to 300 if we get invalid input
+                if self.maxTime <= 0:
+                    self.maxTime = 300
+                    self.txtMaxTime.setText("300")
+
                 self.routes = []
                 tempClusters = []
-                impossibleRoutes = []
-                i = 0
-
-                print("Finding clusters and routes..\n")
-                print(f"{len(clusters)} clusters")
-
-                for cluster in clusters:
-                    #Find a route
-                    print("\nRoute {}".format(i + 1))
-
-                    #Select search algorithm we want
-                    if self.searchAlg == 0:
-                        #GA
-                        routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed)
-                        route = routeFinder.run()
-                    else:
-                        #GBF
-                        GBF = greedyBestFirst.GreedyBestFirst(cluster,self.droneSpeed,self.windSpeed,self.windDir)
-                        route = GBF.routeFinder()
-
-                    #Get real length
-                    realLength,realTime = self.getRealLengthTime(route)
-                    print(f"Length of route: {realLength}km")
-                    print(f"Time taken: {realTime}s")
-
-                    #If the route is too long we split it in 2 and append to temp array
-                    #After every route is found, clusters becomes temp clusters
-                    if realTime > maxTime:
-
-                        #Spaghetti code
-                        if [57.152910, -2.107126,1578318631] in cluster:
-                            cluster.remove([57.152910, -2.107126,1578318631])
-
-                        #Split into 2 clusters
-                        tempClusterer = kmeans.KMeansClusters(cluster,2)
-                        supertempClusts = tempClusterer.getClusters()
-
-                        #Make sure we don't end here
-                        count += 1
-                        #If there is only 1 cluster returned the route is direct and thus impossible
-                        if len(supertempClusts) == 1:
-                            tempClusters.append(supertempClusts[0])
-                            self.routes.append(route)
-                            #Just report it for now
-                            #TODO remove from map or alert customer is too far. Input validation on distance?
-                            impossibleRoutes.append(route)
-                        else:
-                            #Otherwise append new clusters
-                            tempClusters.append(supertempClusts[0])
-                            tempClusters.append(supertempClusts[1])
-                    else:
-                        #If it's possible, just append
-                        tempClusters.append(cluster)
-                        self.routes.append(route)
-
-                    #For colours
-                    i += 1
-
-                #Make sure we exit when we stop finding new clusters
-                if len(clusters) == len(tempClusters):
+                allPossible = False
+                count = 0
+                while not allPossible:
                     count = 0
-
-                print(f"Original = {len(clusters)}\nNew = {len(tempClusters)}")
-                #Assign new array to loop array
-                clusters = tempClusters
-
-                #Exit condition
-                if count == 0:
+                    self.routes = []
+                    tempClusters = []
+                    impossibleRoutes = []
                     i = 0
-                    #Draw routes on map
-                    for route in self.routes:
-                        self.mapMaker.addAllLines(route,self.colours[i])
+
+                    print("Finding clusters and routes..\n")
+                    print(f"{len(clusters)} clusters")
+
+                    for cluster in clusters:
+                        #Find a route
+                        print("\nRoute {}".format(i + 1))
+
+                        #Select search algorithm we want
+                        if self.searchAlg == 0:
+                            #GA
+                            routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed)
+                            route = routeFinder.run()
+                        else:
+                            #GBF
+                            GBF = greedyBestFirst.GreedyBestFirst(cluster,self.droneSpeed,self.windSpeed,self.windDir)
+                            route = GBF.routeFinder()
+
+                        #Get real length
+                        realLength,realTime = self.getRealLengthTime(route)
+                        print(f"Length of route: {realLength}km")
+                        print(f"Time taken: {realTime}s")
+
+                        #If the route is too long we split it in 2 and append to temp array
+                        #After every route is found, clusters becomes temp clusters
+                        if realTime > self.maxTime:
+
+                            #Spaghetti code
+                            if [57.152910, -2.107126,1578318631] in cluster:
+                                cluster.remove([57.152910, -2.107126,1578318631])
+
+                            #Split into 2 clusters
+                            tempClusterer = kmeans.KMeansClusters(cluster,2)
+                            supertempClusts = tempClusterer.getClusters()
+
+                            #Make sure we don't end here
+                            count += 1
+                            #If there is only 1 cluster returned the route is direct and thus impossible
+                            if len(supertempClusts) == 1:
+                                tempClusters.append(supertempClusts[0])
+                                self.routes.append(route)
+                                #Just report it for now
+                                #TODO remove from map or alert customer is too far. Input validation on distance?
+                                impossibleRoutes.append(route)
+                            else:
+                                #Otherwise append new clusters
+                                tempClusters.append(supertempClusts[0])
+                                tempClusters.append(supertempClusts[1])
+                        else:
+                            #If it's possible, just append
+                            tempClusters.append(cluster)
+                            self.routes.append(route)
+
+                        #For colours
                         i += 1
 
-                    if len(impossibleRoutes) != 0:
-                        print("Some routes aren't possible due to their length:")
-                        for route in impossibleRoutes:
-                            print(f"Route:\n{route}\n")
+                    #Make sure we exit when we stop finding new clusters
+                    if len(clusters) == len(tempClusters):
+                        count = 0
 
-                    #End loop
-                    allPossible = True
+                    print(f"Original = {len(clusters)}\nNew = {len(tempClusters)}")
+                    #Assign new array to loop array
+                    clusters = tempClusters
 
-            #Refresh map
-            self.refreshMap()
+                    #Exit condition
+                    if count == 0:
+                        i = 0
+                        #Draw routes on map
+                        for route in self.routes:
+                            self.mapMaker.addAllLines(route,self.colours[i])
+                            i += 1
+
+                        if len(impossibleRoutes) != 0:
+                            print("Some routes aren't possible due to their length:")
+                            for route in impossibleRoutes:
+                                print(f"Route:\n{route}\n")
+
+                        #End loop
+                        allPossible = True
+
+                #Refresh map
+                self.refreshMap()
+
+            #Throw error if input params are not valid
+            else:
+                QMessageBox.about(self, "Error", "Ensure input parameters are positive integers")
 
     #Add button functionality
     def btnAddClicked(self):
@@ -325,7 +331,7 @@ class SchedulerUI(QWidget):
                         route = routeFinder.run()
                     else:
                         # GBF
-                        GBF = greedyBestFirst.GreedyBestFirst(newCluster)
+                        GBF = greedyBestFirst.GreedyBestFirst(newCluster,self.droneSpeed,self.windSpeed,self.windDir)
                         route = GBF.routeFinder()
 
                     # Search location
@@ -362,6 +368,22 @@ class SchedulerUI(QWidget):
                     #Show item added alert
                     QMessageBox.about(self, "Success", "Item added to database\nPress run to see it on the map!")
 
+    #Quit button functionality
+    def btnQuitClicked(self):
+        sys.exit()
+
+    #Validate our inputs are integers > 0
+    def validateParam(self,param):
+        try:
+            val = int(param)
+            if val < 0:
+                return False,val
+            return True,val
+        except ValueError:
+            val = 0
+            return False,val
+
+    #Refresh the map
     def refreshMap(self):
         #get new mapmaker instance
         mapMaker = HTMLGen.MapMaker()
@@ -378,9 +400,6 @@ class SchedulerUI(QWidget):
 
         self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
-    #Quit button functionality
-    def btnQuitClicked(self):
-        sys.exit()
 
     #Calculates the actual length of each route in km
     def getRealLengthTime(self,route):
