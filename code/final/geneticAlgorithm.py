@@ -9,11 +9,11 @@ from haversine import haversine, Unit
 
 #Class to perform a genetic search on given coordinates
 class RouteFinder:
-    def __init__(self,data,droneSpeed):
+    def __init__(self,data,droneSpeed,windSpeed,windDir):
 
         self.ga = pyeasyga.GeneticAlgorithm(data,
-                                    population_size=300,
-                                    generations=300,
+                                    population_size=250,
+                                    generations=250,
                                     crossover_probability=0.8,
                                     mutation_probability=0.2,
                                     elitism=True,
@@ -25,10 +25,9 @@ class RouteFinder:
         self.e6b = E6B.E6B()
 
         #Get wind data
-        weather = weatherdata.WeatherData(57.1497,-2.0943)
-        self.windDir = weather.getWindDirection(57.1497,-2.0943)
-        self.windSpeed = weather.getWindSpeed(57.1497,-2.0943)
-        #Sample parameters
+        self.windDir = windDir
+        self.windSpeed = windSpeed
+        #Get drone speed
         self.droneSpeed = droneSpeed
 
     #Calculate distance from one location to another using euclidean
@@ -118,10 +117,10 @@ class RouteFinder:
             #Thus GA should tend towards the longest waiting customer being at the front
             #Need to scale down the value so route length is still a factor
             #print("ROUTE",route[i])
-            unixTime = route[i][2]
-            unixTime = unixTime/1000000000
+            #unixTime = route[i][2]
+            #unixTime = unixTime/1000000000
             #print("Wait score =",(time * i))
-            fitness += (unixTime * i)
+            #fitness += (unixTime * i)
 
             #print("Real LEN = ", self.getRealLength(loc1,loc2))
             #print("Real Bearing = ", self.getBearing(loc1,loc2))
@@ -164,7 +163,7 @@ class RouteFinder:
 
             #print("Wind dir = ",self.windDir)
             return coordsList
-            print(self.ga.best_individual())
+            #print(self.ga.best_individual())
 '''
 #TEST
 

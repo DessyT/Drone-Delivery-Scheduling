@@ -56,7 +56,7 @@ class GreedyBestFirst:
                 elif legScore < bestScore:
                     bestScore = legScore
                     bestLoc = loc
-            print(f"testing self.route {self.route}\n")
+            #print(f"testing self.route {self.route}\n")
 
             #Append shortest distance and remove from available array
             #print(f"testing closestLoc {closestLoc}\n")

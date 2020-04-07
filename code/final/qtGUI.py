@@ -170,7 +170,7 @@ class SchedulerUI(QWidget):
             timeBool,self.maxTime = self.validateParam(self.txtMaxTime.text())
             dronesBool,self.noDrones = self.validateParam(self.txtNoDrones.text())
 
-            if speedBool == True and timeBool == True and dronesBool == True:
+            if speedBool and timeBool and dronesBool:
 
                 if clusterAlg == 0:
                     ''' KMEANS '''
@@ -218,7 +218,7 @@ class SchedulerUI(QWidget):
                         #Select search algorithm we want
                         if self.searchAlg == 0:
                             #GA
-                            routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed)
+                            routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed,self.windSpeed,self.windDir)
                             route = routeFinder.run()
                         else:
                             #GBF
@@ -298,7 +298,7 @@ class SchedulerUI(QWidget):
     def btnAddClicked(self):
 
         #Call our dialog box
-        if self.dbOpenFlag == False:
+        if not self.dbOpenFlag:
             QMessageBox.about(self,"Error","Load or create a database before adding")
         else:
             dlg = AddDialog()
@@ -352,7 +352,6 @@ class SchedulerUI(QWidget):
                                 # print(f"Old = {self.routes[i]}\nNew = {route}")
                                 # print(f"lens old = {len(self.routes[i])}\nNew = {len(route)}")
                                 self.routes[i] = route
-                                # print("WE GOT HIM")
 
                                 # Escaping
                                 itemFoundFlag = True
