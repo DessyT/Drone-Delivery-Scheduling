@@ -170,6 +170,10 @@ class SchedulerUI(QWidget):
             timeBool,self.maxTime = self.validateParam(self.txtMaxTime.text())
             dronesBool,self.noDrones = self.validateParam(self.txtNoDrones.text())
 
+            #Holds output for csv
+            dataOut = []
+            name = ""
+
             if speedBool and timeBool and dronesBool:
 
                 if clusterAlg == 0:
@@ -220,15 +224,21 @@ class SchedulerUI(QWidget):
                             #GA
                             routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed,self.windSpeed,self.windDir)
                             route = routeFinder.run()
+                            name = "GA" + str(len(clusters))
                         else:
                             #GBF
                             GBF = greedyBestFirst.GreedyBestFirst(cluster,self.droneSpeed,self.windSpeed,self.windDir)
                             route = GBF.routeFinder()
+                            name = "GBF" + str(len(clusters))
 
                         #Get real length
                         realLength,realTime = self.getRealLengthTime(route)
                         print(f"Length of route: {realLength}km")
                         print(f"Time taken: {realTime}s")
+
+                        #Ouput Dict
+                        string = str(realLength) + ":" + str(realTime)
+                        dataOut.append(string)
 
                         #If the route is too long we split it in 2 and append to temp array
                         #After every route is found, clusters becomes temp clusters
@@ -266,6 +276,17 @@ class SchedulerUI(QWidget):
                     #Make sure we exit when we stop finding new clusters
                     if len(clusters) == len(tempClusters):
                         count = 0
+
+                    dataOut.insert(0,name)
+
+                    ### OUTPUTTING TO CSV TEMP HERE
+                    import csv
+                    f = open("data.csv","a")
+
+                    with f:
+                        w = csv.writer(f)
+                        w.writerow(dataOut)
+                        print("DATA WRITTEN")
 
                     print(f"Original = {len(clusters)}\nNew = {len(tempClusters)}")
                     #Assign new array to loop array
