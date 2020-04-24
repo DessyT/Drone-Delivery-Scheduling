@@ -123,6 +123,9 @@ class SchedulerUI(QWidget):
         options |= QFileDialog.DontUseNativeDialog
         self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
         if self.fileName:
+            #Remove everything from existing map
+            self.mapMaker.removeEverything()
+
             #Get db object
             self.database = db.DBHandler(self.fileName+".sqlite3")
             #Create table if it doesn't exist
@@ -142,6 +145,9 @@ class SchedulerUI(QWidget):
             #Create table if it doesn't exist
             self.database.createTable()
 
+            #Remove everything from existing map
+            self.mapMaker.removeEverything()
+
             #Get all data for markers and plot
             allData = self.database.getLocsItems()
             self.mapMaker.addMarkers(allData)
@@ -160,6 +166,9 @@ class SchedulerUI(QWidget):
 
             #Get data from DB
             locsTimes = self.database.getLocsTime()
+
+            #Remove everything from existing map
+            self.mapMaker.removeEverything()
 
             #Find which clustering and search algorithms to use
             clusterAlg = self.drpCluster.currentIndex()

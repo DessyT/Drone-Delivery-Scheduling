@@ -54,11 +54,18 @@ class MapMaker:
 
             self.map.save(self.routedPath)
 
+    #Creates a blank map for when a new DB is opened or a different algorithm is used to search
+    def removeEverything(self):
 
-#test = MapMaker()
+        self.map = folium.Map(location = [57.152910, -2.107126], width=500, height=500, zoom_start=13)
+        self.map.save(self.routedPath)
+
+'''
+test = MapMaker()
 #Testing with DB. Need to get data first
-#testDB = db.DBHandler("db.sqlite3")
-#locData = testDB.getAllLocs()
-
-#test.addAllLines([[0,0]])
-#test.addMarkers([[5,6,"TEST"]])
+testDB = db.DBHandler("/home/andrew/Documents/uni/project/Drone-Delivery-Scheduling/code/final/aberdeen.sqlite3")
+locData = testDB.getLocsTime()
+print(locData)
+test.addMarkers(locData)
+test.removeEverything()
+'''
