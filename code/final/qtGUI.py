@@ -342,6 +342,7 @@ class SchedulerUI(QWidget):
                         i = 0
                         #Draw routes on map
                         for route in self.routes:
+                            self.globalAllPossible = True
                             self.mapMaker.addAllLines(route,self.colours[i])
                             i += 1
 
@@ -532,50 +533,45 @@ class SchedulerUI(QWidget):
         if self.globalAllPossible:
             possible = "All customers are close enough for delivery"
         else:
-            possible = "Some customers are too far away for delivery"
+            possible = "Some customers are too far away for delivery - they appear with no route line to them"
 
         outStr = ""
         for i in range(len(self.routes)):
-            outStr = outStr + f'Colour: {self.colourNames[i]}, ROUTE: {self.routes[i]} Time: {self.times[i]} Distance: {self.lengths[i]} </br>'
+            outStr = outStr + f'Colour: {self.colourNames[i]} Time: {self.times[i]}s Distance: {self.lengths[i]}km </br>'
 
-        #Get body line
+        #Insert into HTML file
         from bs4 import BeautifulSoup
 
         with open(self.path) as html:
             soup = BeautifulSoup(html.read(),features='html.parser')
 
+            #Get name of div
             div = soup.findAll("div", {"class":"folium-map"})
-            print("DIV = ",div[0])
+
             # Build body string
             html_str = f"""
                 
                     <h1>Drone Schedule</h1>
-                    <h2>Number of customers: {self.noCustomers}</h2>
-                    <h2>Number of drones: {self.noDrones}</he>
-                    <h2>{possible}</h2>
+                    <h3>Number of customers: {self.noCustomers}</h3>
+                    <h3>Number of drones: {self.noDrones}</h3>
+                    <h3>{possible}</h3>
 
-                    <p>Details of deliveries:
+                    <p>Details of deliveries:</br>
                         {outStr}
                     </p>
-                    <p>Impossible routes: {self.globalImpossibleRoutes}</p>
 
-                    <h1> MAP HERE </h1>
                     {div[0]}
-                
             """
 
+            #Remove everything from body
             soup.body.clear()
 
-            '''
-            for tag in soup.findAll("body"):
-                print("TAG = ",tag)
-                tag.extract()
-                #tag.string = html_str
-            '''
+            #Replace with new HTML
             new_body = soup.new_tag("div")
             new_body.append(html_str)
             soup.body.insert(0,new_body)
 
+            #So it outputs properly
             new_text = soup.prettify()
 
         #Replace html chars
@@ -584,7 +580,6 @@ class SchedulerUI(QWidget):
 
         #Now save to new file
         with open("schedule.html",mode="w") as fp:
-
             fp.write(fixedHTML)
 
 
