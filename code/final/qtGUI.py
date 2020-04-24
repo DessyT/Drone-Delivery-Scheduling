@@ -40,7 +40,19 @@ class SchedulerUI(QWidget):
 
         #List of colours for output
         self.colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
+        self.colourNames = ["crimson","light green","royal blue","orange","dark purple","turquoise","pink","lime green","off pink","teal","mauve","brown","lemon","maroon","mint","olive","sand","navy","grey","white","black"]
 
+        #For modifying the HTML
+        self.noDrones = 0
+        self.noCustomers = 0
+        self.globalAllPossible = True
+        self.globalImpossibleRoutes = []
+        self.noRoutes = 0
+        self.lengths = []
+        self.times = []
+        self.routes = []
+
+        #Draw the GUI
         self.initUI()
 
     #Setup out main window GUI
@@ -166,6 +178,8 @@ class SchedulerUI(QWidget):
 
             #Get data from DB
             locsTimes = self.database.getLocsTime()
+            #For outputting to html
+            self.noCustomers = len(locsTimes)
 
             #Remove everything from existing map
             self.mapMaker.removeEverything()
@@ -183,6 +197,7 @@ class SchedulerUI(QWidget):
             dataOut = []
             name = ""
 
+            #Only run if params are all valid
             if speedBool and timeBool and dronesBool:
 
                 if clusterAlg == 0:
@@ -205,12 +220,11 @@ class SchedulerUI(QWidget):
                 #For holding all lengths
                 lens = []
 
-                #Default to 300 if we get invalid input
+                #Default to 900s (15m) if we get invalid input
                 if self.maxTime <= 0:
                     self.maxTime = 300
-                    self.txtMaxTime.setText("300")
+                    self.txtMaxTime.setText("900")
 
-                self.routes = []
                 tempClusters = []
                 allPossible = False
                 count = 0
@@ -221,23 +235,35 @@ class SchedulerUI(QWidget):
                     impossibleRoutes = []
                     i = 0
 
+                    #Reset times and distances
+                    self.times = []
+                    self.lengths = []
+
                     print("Finding clusters and routes..\n")
                     print(f"{len(clusters)} clusters")
 
                     for cluster in clusters:
                         #Find a route
                         print("\nRoute {}".format(i + 1))
+                        print(f"\nRoute {i+1}. Colour = {self.colourNames[i]}")
 
                         #Select search algorithm we want
                         if self.searchAlg == 0:
                             #GA
+                            print("Using genetic algorithm")
+
                             routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed,self.windSpeed,self.windDir)
                             route = routeFinder.run()
+
+                            #for csv
                             name = "GA" + str(len(clusters))
                         else:
                             #GBF
+                            print("Using greedy best first")
                             GBF = greedyBestFirst.GreedyBestFirst(cluster,self.droneSpeed,self.windSpeed,self.windDir)
                             route = GBF.routeFinder()
+
+                            #for csv
                             name = "GBF" + str(len(clusters))
 
                         #Get real length
@@ -245,7 +271,11 @@ class SchedulerUI(QWidget):
                         print(f"Length of route: {realLength}km")
                         print(f"Time taken: {realTime}s")
 
-                        #Ouput Dict
+                        #For HTML output
+                        self.lengths.append(realLength)
+                        self.times.append(realTime)
+
+                        #Ouput Dict for csv
                         string = str(realLength) + ":" + str(realTime)
                         dataOut.append(string)
 
@@ -263,12 +293,17 @@ class SchedulerUI(QWidget):
 
                             #Make sure we don't end here
                             count += 1
-                            #If there is only 1 cluster returned the route is direct and thus impossible
+                            #If there is only 1 cluster returned the route is already direct and thus impossible
                             if len(supertempClusts) == 1:
                                 tempClusters.append(supertempClusts[0])
                                 self.routes.append(route)
                                 #Just report it for now
                                 #TODO remove from map or alert customer is too far. Input validation on distance?
+
+                                #Remove from lengths and times arrays
+                                self.lengths.remove(realLength)
+                                self.times.remove(realTime)
+
                                 impossibleRoutes.append(route)
                             else:
                                 #Otherwise append new clusters
@@ -288,6 +323,7 @@ class SchedulerUI(QWidget):
 
                     dataOut.insert(0,name)
 
+                    '''
                     ### OUTPUTTING TO CSV TEMP HERE
                     import csv
                     f = open("data.csv","a")
@@ -295,9 +331,9 @@ class SchedulerUI(QWidget):
                     with f:
                         w = csv.writer(f)
                         w.writerow(dataOut)
-                        print("DATA WRITTEN")
-
-                    print(f"Original = {len(clusters)}\nNew = {len(tempClusters)}")
+                        print("DATA WRITTEN")'''
+                    self.noRoutes = len(tempClusters)
+                    print(f"Original = {self.noDrones}\nNew = {len(tempClusters)}")
                     #Assign new array to loop array
                     clusters = tempClusters
 
@@ -310,15 +346,22 @@ class SchedulerUI(QWidget):
                             i += 1
 
                         if len(impossibleRoutes) != 0:
-                            print("Some routes aren't possible due to their length:")
+                            self.globalImpossibleRoutes = []
+                            print("Some customers are too far away")
                             for route in impossibleRoutes:
-                                print(f"Route:\n{route}\n")
+                                self.globalAllPossible = False
+                                self.globalImpossibleRoutes.append(route)
+
+                                #Remove impossible from possible route list
+                                self.routes.remove(route)
 
                         #End loop
                         allPossible = True
 
                 #Refresh map
                 self.refreshMap()
+
+                self.modifyHTML()
 
             #Throw error if input params are not valid
             else:
@@ -483,6 +526,67 @@ class SchedulerUI(QWidget):
         #print(f"windDir = {windDir}\nwindSpeed = {windSpeed}\ndroneSpeed = {speed}")
 
         return time
+
+    def modifyHTML(self,):
+
+        if self.globalAllPossible:
+            possible = "All customers are close enough for delivery"
+        else:
+            possible = "Some customers are too far away for delivery"
+
+        outStr = ""
+        for i in range(len(self.routes)):
+            outStr = outStr + f'Colour: {self.colourNames[i]}, ROUTE: {self.routes[i]} Time: {self.times[i]} Distance: {self.lengths[i]} </br>'
+
+        #Get body line
+        from bs4 import BeautifulSoup
+
+        with open(self.path) as html:
+            soup = BeautifulSoup(html.read(),features='html.parser')
+
+            div = soup.findAll("div", {"class":"folium-map"})
+            print("DIV = ",div[0])
+            # Build body string
+            html_str = f"""
+                
+                    <h1>Drone Schedule</h1>
+                    <h2>Number of customers: {self.noCustomers}</h2>
+                    <h2>Number of drones: {self.noDrones}</he>
+                    <h2>{possible}</h2>
+
+                    <p>Details of deliveries:
+                        {outStr}
+                    </p>
+                    <p>Impossible routes: {self.globalImpossibleRoutes}</p>
+
+                    <h1> MAP HERE </h1>
+                    {div[0]}
+                
+            """
+
+            soup.body.clear()
+
+            '''
+            for tag in soup.findAll("body"):
+                print("TAG = ",tag)
+                tag.extract()
+                #tag.string = html_str
+            '''
+            new_body = soup.new_tag("div")
+            new_body.append(html_str)
+            soup.body.insert(0,new_body)
+
+            new_text = soup.prettify()
+
+        #Replace html chars
+        ltFix = new_text.replace("&lt;","<")
+        fixedHTML = ltFix.replace("&gt;",">")
+
+        #Now save to new file
+        with open("schedule.html",mode="w") as fp:
+
+            fp.write(fixedHTML)
+
 
 #New delivery input dialog
 class AddDialog(QDialog):

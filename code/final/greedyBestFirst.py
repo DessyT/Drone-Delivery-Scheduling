@@ -9,11 +9,9 @@ import os
 class GreedyBestFirst:
 
     def __init__(self,allLocs,droneSpeed,windSpeed,windDir):
-        print("Using greedy best first")
         self.allLocs = allLocs
         self.allLocs = [locs[:-1] for locs in allLocs]
         self.allTimes = [times[-1] for times in allLocs]
-        print(self.allLocs)
         #Starting location
         self.route = []
 
