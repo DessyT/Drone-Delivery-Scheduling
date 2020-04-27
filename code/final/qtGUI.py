@@ -576,16 +576,37 @@ class SchedulerUI(QWidget):
         #Swap indexes for shortest so they are in the first x positions
         #Only do this when no routes > no drones
         j = 0
+        search = False
         if len(indexArray) > 0:
             j = indexArray[0]
             count = 0
             search = True
 
+        tableStr = """
+            <TABLE style='width:50%;'>
+                <TR>
+                    <TH style='text-align:center;'>Drone</TH>
+                    <TH style='text-align:center;'>Route Colour</TH>
+                    <TH style='text-align:center;'>Time (s)</TH>
+                    <TH style='text-align:center;'>Distance (km)</TH>
+                </TR>
+        """
+
+        tableLine = ""
         #Once per drone
         for i in range(self.noDrones):
             outStr = outStr + f"Drone {i + 1} </br>"
             outStr = outStr + f'Colour: {self.colourNames[i]} Time: {self.times[i]}s Distance: {self.lengths[i]}km </br>'
 
+            tableLine = f"<TR><TD>Drone {i+1}</TD><TD></TD><TD></TD><TD></TD></TR>"
+            tableStr += tableLine
+
+            tableLine = f"""
+                        <TR><TD></TD><TD>{self.colourNames[i]}</TD><TD>{self.times[i]}</TD><TD>{self.lengths[i]}</TD></TR>
+
+                        """
+
+            tableStr += tableLine
             #Make sure deliveries more than the no. drones are given to existing drones
             #Also make sure it goes in the route with the shortest time
             #If we're on a shortest route, give an extra route
@@ -593,11 +614,20 @@ class SchedulerUI(QWidget):
                 num = self.noDrones + count
                 outStr = outStr + f'Colour: {self.colourNames[num]} Time: {self.times[num]}s Distance: {self.lengths[num]}km'
 
+                tableLine = f"""
+                        <TR><TD></TD><TD>{self.colourNames[num]}</TD><TD>{self.times[num]}</TD><TD>{self.lengths[num]}</TD></TR>
+                    
+                    """
+                tableStr += tableLine
+
                 count += 1
                 if count < len(indexArray):
                     j = indexArray[count]
 
+
             outStr = outStr + "</br></br>"
+
+        tableStr += "</TABLE>"
 
         #Insert into HTML file
         from bs4 import BeautifulSoup
@@ -609,6 +639,7 @@ class SchedulerUI(QWidget):
             div = soup.findAll("div", {"class":"folium-map"})
 
             # Build body string
+            ### ADD outStr if you want text output instead of table
             html_str = f"""
                 
                     <h1>Drone Schedule</h1>
@@ -618,7 +649,7 @@ class SchedulerUI(QWidget):
                     <h3>{possible}</h3>
 
                     <p>Details of deliveries:</br>
-                        {outStr}
+                        {tableStr}
                     </p>
 
                     {div[0]}
@@ -632,6 +663,16 @@ class SchedulerUI(QWidget):
             new_body.append(html_str)
             soup.body.insert(0,new_body)
 
+            new_head = soup.new_tag("head")
+            css = """
+                <STYLE>
+                    table,th,td,tr {
+                    border:1px solid black;
+                    text-align:center;}
+                </STYLE>
+            """
+            new_head.append(css)
+            soup.head.insert(0,new_head)
             #So it outputs properly
             new_text = soup.prettify()
 
