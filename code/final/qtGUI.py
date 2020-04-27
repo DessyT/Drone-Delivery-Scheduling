@@ -528,6 +528,12 @@ class SchedulerUI(QWidget):
 
         return time
 
+    def getSpace(self,indexArray):
+        for plz in range(self.noDrones):
+            if plz not in indexArray:
+                long = plz
+                return long
+
     def modifyHTML(self,):
 
         if self.globalAllPossible:
@@ -536,8 +542,62 @@ class SchedulerUI(QWidget):
             possible = "Some customers are too far away for delivery - they appear with no route line to them"
 
         outStr = ""
-        for i in range(len(self.routes)):
+
+        #Find positions of shortest x routes
+        #How many do we need
+        diff = self.noRoutes - self.noDrones
+        indexArray = []
+        for i in range(diff):
+            indexArray.append(self.times.index(sorted(self.times)[i]))
+
+        #Arrange in order
+        indexArray.sort()
+
+        #Swap positions so that shortest routes are the first elements in arrays
+        for i in range(len(indexArray)):
+            short = indexArray[i]
+            long = i
+
+            #If the short index is > than the number of drones we need to swap them
+            if short > self.noDrones:
+                #Find a free space in the index array that isn't a current short number
+                if long in indexArray:
+                    long = self.getSpace(indexArray)
+
+                #Swap colournames, times, lengths
+                self.colourNames[long],self.colourNames[short] = self.colourNames[short],self.colourNames[long]
+                self.times[long], self.times[short] = self.times[short], self.times[long]
+                self.lengths[long], self.lengths[short] = self.lengths[short], self.lengths[long]
+
+                #Update the index array pointer
+                indexArray[i] = i
+
+
+        #Swap indexes for shortest so they are in the first x positions
+        #Only do this when no routes > no drones
+        j = 0
+        if len(indexArray) > 0:
+            j = indexArray[0]
+            count = 0
+            search = True
+
+        #Once per drone
+        for i in range(self.noDrones):
+            outStr = outStr + f"Drone {i + 1} </br>"
             outStr = outStr + f'Colour: {self.colourNames[i]} Time: {self.times[i]}s Distance: {self.lengths[i]}km </br>'
+
+            #Make sure deliveries more than the no. drones are given to existing drones
+            #Also make sure it goes in the route with the shortest time
+            #If we're on a shortest route, give an extra route
+            if i == j and search:
+                num = self.noDrones + count
+                outStr = outStr + f'Colour: {self.colourNames[num]} Time: {self.times[num]}s Distance: {self.lengths[num]}km'
+
+                count += 1
+                if count < len(indexArray):
+                    j = indexArray[count]
+
+            outStr = outStr + "</br></br>"
 
         #Insert into HTML file
         from bs4 import BeautifulSoup
@@ -554,6 +614,7 @@ class SchedulerUI(QWidget):
                     <h1>Drone Schedule</h1>
                     <h3>Number of customers: {self.noCustomers}</h3>
                     <h3>Number of drones: {self.noDrones}</h3>
+                    <h3>Number of routes: {self.noRoutes}
                     <h3>{possible}</h3>
 
                     <p>Details of deliveries:</br>
@@ -578,7 +639,6 @@ class SchedulerUI(QWidget):
         ltFix = new_text.replace("&lt;","<")
         fixedHTML = ltFix.replace("&gt;",">")
 
-        #Now save to new file
         with open("schedule.html",mode="w") as fp:
             fp.write(fixedHTML)
 
