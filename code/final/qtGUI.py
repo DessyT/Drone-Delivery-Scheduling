@@ -599,37 +599,45 @@ class SchedulerUI(QWidget):
         #Once per drone
 
         ##GET REMAINDER AND MULTIPLE
-        remainder = self.noRoutes % self.noDrones
+        if self.noRoutes > self.noDrones:
+            remainder = self.noRoutes % self.noDrones
 
-        temp = self.noRoutes - remainder
-        noRuns = int(temp / self.noDrones)
+            temp = self.noRoutes - remainder
+            noRuns = int(temp / self.noDrones)
+        else:
+            remainder = 0
+            noRuns = 1
 
         count = 0
-        for i in range(self.noDrones):
-            tableLine = f"<TR><TD>Drone {i+1}</TD><TD></TD><TD></TD><TD></TD></TR>"
-            tableStr += tableLine
-            '''
-            tableLine = f"""
-                        <TR><TD></TD><TD>{self.colourNames[i]}</TD><TD>{self.times[i]}</TD><TD>{self.lengths[i]}</TD></TR>
+        while count < self.noRoutes:
+            for i in range(self.noDrones):
+                tableLine = f"<TR><TD>Drone {i+1}</TD><TD></TD><TD></TD><TD></TD></TR>"
+                tableStr += tableLine
+                '''
+                tableLine = f"""
+                            <TR><TD></TD><TD>{self.colourNames[i]}</TD><TD>{self.times[i]}</TD><TD>{self.lengths[i]}</TD></TR>
+                            """
+                tableStr += tableLine'''
+
+                #First do x multiples required
+                for j in range(noRuns):
+                    tableLine = f"""
+                            <TR><TD></TD><TD>{self.colourNames[count]}</TD><TD>{self.times[count]}</TD><TD>{self.lengths[count]}</TD></TR>
                         """
-            tableStr += tableLine'''
+                    tableStr += tableLine
+                    count += 1
 
-            #First do x multiples required
-            for j in range(noRuns):
-                print("COUNT = ",count)
-                tableLine = f"""
-                        <TR><TD></TD><TD>{self.colourNames[count]}</TD><TD>{self.times[count]}</TD><TD>{self.lengths[count]}</TD></TR>
-                    """
-                tableStr += tableLine
-                count += 1
+                #Then make sure we do remainder
+                if remainder > 0:
+                    tableLine = f"""
+                               <TR><TD></TD><TD>{self.colourNames[count]}</TD><TD>{self.times[count]}</TD><TD>{self.lengths[count]}</TD></TR>
+                           """
+                    tableStr += tableLine
+                    count += 1
+                    remainder -= 1
 
-            #Then make sure we do remainder
-            if remainder > 0:
-                tableLine = f"""
-                           <TR><TD></TD><TD>{self.colourNames[self.noRoutes - remainder]}</TD><TD>{self.times[-remainder]}</TD><TD>{self.lengths[-remainder]}</TD></TR>
-                       """
-                tableStr += tableLine
-                remainder -= 1
+                if count >= self.noRoutes:
+                    break
 
             '''
             #Make sure deliveries more than the no. drones are given to existing drones
