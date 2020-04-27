@@ -39,8 +39,8 @@ class SchedulerUI(QWidget):
         self.windSpeed = self.weather.getWindSpeed(57.1497,-2.0943)
 
         #List of colours for output
-        self.colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
-        self.colourNames = ["crimson","light green","royal blue","orange","dark purple","turquoise","pink","lime green","off pink","teal","mauve","brown","lemon","maroon","mint","olive","sand","navy","grey","white","black"]
+        self.colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000','#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
+        self.colourNames = ["crimson","light green","royal blue","orange","dark purple","turquoise","pink","lime green","off pink","teal","mauve","brown","lemon","maroon","mint","olive","sand","navy","grey","white","black","crimson","light green","royal blue","orange","dark purple","turquoise","pink","lime green","off pink","teal","mauve","brown","lemon","maroon","mint","olive","sand","navy","grey","white","black"]
 
         #For modifying the HTML
         self.noDrones = 0
@@ -332,7 +332,6 @@ class SchedulerUI(QWidget):
                         w = csv.writer(f)
                         w.writerow(dataOut)
                         print("DATA WRITTEN")'''
-                    self.noRoutes = len(tempClusters)
                     print(f"Original = {self.noDrones}\nNew = {len(tempClusters)}")
                     #Assign new array to loop array
                     clusters = tempClusters
@@ -355,6 +354,8 @@ class SchedulerUI(QWidget):
 
                                 #Remove impossible from possible route list
                                 self.routes.remove(route)
+
+                        self.noRoutes = len(tempClusters) - len(self.globalImpossibleRoutes)
 
                         #End loop
                         allPossible = True
@@ -541,10 +542,9 @@ class SchedulerUI(QWidget):
         else:
             possible = "Some customers are too far away for delivery - they appear with no route line to them"
 
-        outStr = ""
-
         #Find positions of shortest x routes
         #How many do we need
+        ''' sorry code :(
         diff = self.noRoutes - self.noDrones
         indexArray = []
         for i in range(diff):
@@ -552,6 +552,7 @@ class SchedulerUI(QWidget):
 
         #Arrange in order
         indexArray.sort()
+        print("INDARRAY = ",indexArray)
 
         #Swap positions so that shortest routes are the first elements in arrays
         for i in range(len(indexArray)):
@@ -570,8 +571,10 @@ class SchedulerUI(QWidget):
                 self.lengths[long], self.lengths[short] = self.lengths[short], self.lengths[long]
 
                 #Update the index array pointer
-                indexArray[i] = i
+                indexArray[i] = long
 
+        indexArray.sort()
+        print("INDARRAY 2 = ",indexArray)
 
         #Swap indexes for shortest so they are in the first x positions
         #Only do this when no routes > no drones
@@ -580,7 +583,7 @@ class SchedulerUI(QWidget):
         if len(indexArray) > 0:
             j = indexArray[0]
             count = 0
-            search = True
+            search = True'''
 
         tableStr = """
             <TABLE style='width:50%;'>
@@ -594,29 +597,47 @@ class SchedulerUI(QWidget):
 
         tableLine = ""
         #Once per drone
-        for i in range(self.noDrones):
-            outStr = outStr + f"Drone {i + 1} </br>"
-            outStr = outStr + f'Colour: {self.colourNames[i]} Time: {self.times[i]}s Distance: {self.lengths[i]}km </br>'
 
+        ##GET REMAINDER AND MULTIPLE
+        remainder = self.noRoutes % self.noDrones
+
+        temp = self.noRoutes - remainder
+        noRuns = int(temp / self.noDrones)
+
+        count = 0
+        for i in range(self.noDrones):
             tableLine = f"<TR><TD>Drone {i+1}</TD><TD></TD><TD></TD><TD></TD></TR>"
             tableStr += tableLine
-
+            '''
             tableLine = f"""
                         <TR><TD></TD><TD>{self.colourNames[i]}</TD><TD>{self.times[i]}</TD><TD>{self.lengths[i]}</TD></TR>
-
                         """
+            tableStr += tableLine'''
 
-            tableStr += tableLine
+            #First do x multiples required
+            for j in range(noRuns):
+                print("COUNT = ",count)
+                tableLine = f"""
+                        <TR><TD></TD><TD>{self.colourNames[count]}</TD><TD>{self.times[count]}</TD><TD>{self.lengths[count]}</TD></TR>
+                    """
+                tableStr += tableLine
+                count += 1
+
+            #Then make sure we do remainder
+            if remainder > 0:
+                tableLine = f"""
+                           <TR><TD></TD><TD>{self.colourNames[self.noRoutes - remainder]}</TD><TD>{self.times[-remainder]}</TD><TD>{self.lengths[-remainder]}</TD></TR>
+                       """
+                tableStr += tableLine
+                remainder -= 1
+
+            '''
             #Make sure deliveries more than the no. drones are given to existing drones
             #Also make sure it goes in the route with the shortest time
-            #If we're on a shortest route, give an extra route
             if i == j and search:
                 num = self.noDrones + count
-                outStr = outStr + f'Colour: {self.colourNames[num]} Time: {self.times[num]}s Distance: {self.lengths[num]}km'
-
                 tableLine = f"""
                         <TR><TD></TD><TD>{self.colourNames[num]}</TD><TD>{self.times[num]}</TD><TD>{self.lengths[num]}</TD></TR>
-                    
                     """
                 tableStr += tableLine
 
@@ -624,9 +645,14 @@ class SchedulerUI(QWidget):
                 if count < len(indexArray):
                     j = indexArray[count]
 
-
-            outStr = outStr + "</br></br>"
-
+            #Make sure we don't have any remainder
+            if remainder > 0:
+                tableLine = f"""
+                        <TR><TD></TD><TD>{self.colourNames[self.noRoutes-remainder]}</TD><TD>{self.times[-remainder]}</TD><TD>{self.lengths[-remainder]}</TD></TR>
+                    """
+                tableStr += tableLine
+                remainder -= 1
+            '''
         tableStr += "</TABLE>"
 
         #Insert into HTML file
@@ -639,7 +665,6 @@ class SchedulerUI(QWidget):
             div = soup.findAll("div", {"class":"folium-map"})
 
             # Build body string
-            ### ADD outStr if you want text output instead of table
             html_str = f"""
                 
                     <h1>Drone Schedule</h1>
