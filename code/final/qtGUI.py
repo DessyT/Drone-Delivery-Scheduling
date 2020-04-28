@@ -228,6 +228,8 @@ class SchedulerUI(QWidget):
                 tempClusters = []
                 allPossible = False
                 count = 0
+                self.globalImpossibleRoutes = []
+
                 while not allPossible:
                     count = 0
                     self.routes = []
@@ -346,7 +348,6 @@ class SchedulerUI(QWidget):
                             i += 1
 
                         if len(impossibleRoutes) != 0:
-                            self.globalImpossibleRoutes = []
                             print("Some customers are too far away")
                             for route in impossibleRoutes:
                                 self.globalAllPossible = False
@@ -598,6 +599,9 @@ class SchedulerUI(QWidget):
         tableLine = ""
         #Once per drone
 
+        noRuns = 0
+        remainder = 0
+
         ##GET REMAINDER AND MULTIPLE
         if self.noRoutes > self.noDrones:
             remainder = self.noRoutes % self.noDrones
@@ -679,6 +683,8 @@ class SchedulerUI(QWidget):
                     <h3>Number of customers: {self.noCustomers}</h3>
                     <h3>Number of drones: {self.noDrones}</h3>
                     <h3>Number of routes: {self.noRoutes}
+                    <h3>Wind Speed: {self.windSpeed}m/s</h3>
+                    <h3>Wind Bearing: {self.windDir}°</h3>
                     <h3>{possible}</h3>
 
                     <p>Details of deliveries:</br>
