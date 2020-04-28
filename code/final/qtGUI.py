@@ -707,7 +707,9 @@ class SchedulerUI(QWidget):
                 <STYLE>
                     table,th,td,tr {
                     border:1px solid black;
-                    text-align:center;}
+                    text-align:center;
+                    }
+
                 </STYLE>
             """
             new_head.append(css)
