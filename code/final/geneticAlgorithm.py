@@ -6,13 +6,14 @@ import bearing
 import weatherdata
 import E6B
 from haversine import haversine, Unit
+from operator import attrgetter
 
 #Class to perform a genetic search on given coordinates
 class RouteFinder:
-    def __init__(self,data,droneSpeed,windSpeed,windDir):
+    def __init__(self,data,droneSpeed,windSpeed,windDir,populationsize):
 
         self.ga = pyeasyga.GeneticAlgorithm(data,
-                                    population_size=250,
+                                    population_size=populationsize,
                                     generations=250,
                                     crossover_probability=0.8,
                                     mutation_probability=0.2,
@@ -29,6 +30,9 @@ class RouteFinder:
         self.windSpeed = windSpeed
         #Get drone speed
         self.droneSpeed = droneSpeed
+
+        self.maximise_fitness = False
+        self.tournament_size = populationsize // 10
 
     #Calculate distance from one location to another using euclidean
     def distance(self,loc1,loc2):
@@ -65,9 +69,17 @@ class RouteFinder:
         loc2 = random.randrange(len(route))
         route[loc1], route[loc2] = route[loc2], route[loc1]
 
+
     #Selection operation
-    def selection(self,population):
+    def randomSelection(self,population):
         return random.choice(population)
+
+    def tournamentSelection(self,population):
+        if self.tournament_size == 0:
+            self.tournament_size = 2
+        members = random.sample(population, self.tournament_size)
+        members.sort(key=attrgetter('fitness'), reverse=self.maximise_fitness)
+        return members[0]
 
     #Fitness function
     #Calculates the length of the current route and time customer has waited
@@ -151,7 +163,7 @@ class RouteFinder:
             self.ga.create_individual = self.createIndividual
             self.ga.crossover_function = self.crossover
             self.ga.mutate_function = self.mutate
-            self.ga.selection_function = self.selection
+            self.ga.selection_function = self.tournamentSelection
             self.ga.fitness_function = self.fitness
             self.ga.run()
 
