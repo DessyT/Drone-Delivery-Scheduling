@@ -254,7 +254,8 @@ class SchedulerUI(QWidget):
                             #GA
                             print("Using genetic algorithm")
 
-                            routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed,self.windSpeed,self.windDir,250)
+                            populationsize = 300
+                            routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed,self.windSpeed,self.windDir,populationsize)
                             route = routeFinder.run()
 
                             #for csv

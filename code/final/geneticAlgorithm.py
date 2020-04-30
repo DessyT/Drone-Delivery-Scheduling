@@ -69,7 +69,6 @@ class RouteFinder:
         loc2 = random.randrange(len(route))
         route[loc1], route[loc2] = route[loc2], route[loc1]
 
-
     #Selection operation
     def randomSelection(self,population):
         return random.choice(population)
