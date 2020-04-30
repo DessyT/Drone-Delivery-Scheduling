@@ -222,7 +222,7 @@ class SchedulerUI(QWidget):
 
                 #Default to 900s (15m) if we get invalid input
                 if self.maxTime <= 0:
-                    self.maxTime = 300
+                    self.maxTime = 900
                     self.txtMaxTime.setText("900")
 
                 tempClusters = []
@@ -678,7 +678,7 @@ class SchedulerUI(QWidget):
 
             # Build body string
             html_str = f"""
-                
+
                     <h1>Drone Schedule</h1>
                     <h3>Number of customers: {self.noCustomers}</h3>
                     <h3>Number of drones: {self.noDrones}</h3>
