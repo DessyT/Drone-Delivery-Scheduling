@@ -8,7 +8,6 @@ class WeatherData:
         #API key
         self.key = config.api_key
 
-        #
         self.lat = lat
         self.lon = lon
 
@@ -20,9 +19,6 @@ class WeatherData:
         self.lat = lat
         self.lon = lon
 
-        #url = "http://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&appid={}".format(self.lat,self.lon,self.key)
-        #weather = requests.get(url)
-
         #print("Wind dir = ", weather.json()["wind"]["deg"])
         return self.weather.json()["currently"]["windBearing"]
 
@@ -30,8 +26,6 @@ class WeatherData:
         self.lat = lat
         self.lon = lon
 
-        #url = "http://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&appid={}".format(self.lat,self.lon,self.key)
-        #weather = requests.get(url)
 
         #print("WindSp =",weather.json()["wind"]["speed"])
         return self.weather.json()["currently"]["windSpeed"]

@@ -365,6 +365,7 @@ class SchedulerUI(QWidget):
                 #Refresh map
                 self.refreshMap()
 
+                #Modify HTML for overview file
                 self.modifyHTML()
 
             #Throw error if input params are not valid
@@ -537,6 +538,7 @@ class SchedulerUI(QWidget):
                 long = plz
                 return long
 
+    #Modify the file created by folium to include other data
     def modifyHTML(self,):
 
         if self.globalAllPossible:
@@ -722,8 +724,8 @@ class SchedulerUI(QWidget):
         ltFix = new_text.replace("&lt;","<")
         fixedHTML = ltFix.replace("&gt;",">")
 
-        with open("schedule.html",mode="w") as fp:
-            fp.write(fixedHTML)
+        with open("schedule.html",mode="w") as file:
+            file.write(fixedHTML)
 
 
 #New delivery input dialog
