@@ -15,8 +15,8 @@ class RouteFinder:
         self.ga = pyeasyga.GeneticAlgorithm(data,
                                     population_size=populationsize,
                                     generations=250,
-                                    crossover_probability=0.8,
-                                    mutation_probability=0.2,
+                                    crossover_probability=0.9,
+                                    mutation_probability=0.05,
                                     elitism=True,
                                     maximise_fitness=False)
 

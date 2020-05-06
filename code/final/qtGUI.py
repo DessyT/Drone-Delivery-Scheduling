@@ -10,7 +10,7 @@ import greedyBestFirst
 import bearing
 import E6B
 import weatherdata
-
+import time
 
 
 from PyQt5.QtWidgets import *
@@ -176,6 +176,9 @@ class SchedulerUI(QWidget):
             QMessageBox.about(self,"Error","Load or create a database before running")
         else:
 
+            #For time output
+            startTime = time.time()
+
             #Get data from DB
             locsTimes = self.database.getLocsTime()
             #For outputting to html
@@ -326,15 +329,17 @@ class SchedulerUI(QWidget):
 
                     dataOut.insert(0,name)
 
-                    '''
-                    ### OUTPUTTING TO CSV TEMP HERE
+                    # OUTPUTTING TO CSV
                     import csv
                     f = open("data.csv","a")
 
                     with f:
                         w = csv.writer(f)
                         w.writerow(dataOut)
-                        print("DATA WRITTEN")'''
+                        print("DATA WRITTEN")
+
+                    print(f"----- time = {round(time.time() - startTime, 2)} seconds -----")
+
                     print(f"Original = {self.noDrones}\nNew = {len(tempClusters)}")
                     #Assign new array to loop array
                     clusters = tempClusters
