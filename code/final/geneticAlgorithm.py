@@ -10,11 +10,11 @@ from operator import attrgetter
 
 #Class to perform a genetic search on given coordinates
 class RouteFinder:
-    def __init__(self,data,droneSpeed,windSpeed,windDir,populationsize):
+    def __init__(self,data,droneSpeed,windSpeed,windDir,populationsize,generations):
 
         self.ga = pyeasyga.GeneticAlgorithm(data,
                                     population_size=populationsize,
-                                    generations=250,
+                                    generations=generations,
                                     crossover_probability=0.9,
                                     mutation_probability=0.05,
                                     elitism=True,

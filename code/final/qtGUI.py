@@ -52,6 +52,9 @@ class SchedulerUI(QWidget):
         self.times = []
         self.routes = []
 
+        self.popSize = 150
+        self.noGens = 150
+
         #Draw the GUI
         self.initUI()
 
@@ -176,9 +179,6 @@ class SchedulerUI(QWidget):
             QMessageBox.about(self,"Error","Load or create a database before running")
         else:
 
-            #For time output
-            startTime = time.time()
-
             #Get data from DB
             locsTimes = self.database.getLocsTime()
             #For outputting to html
@@ -247,6 +247,10 @@ class SchedulerUI(QWidget):
                     print("Finding clusters and routes..\n")
                     print(f"{len(clusters)} clusters")
 
+                    startTime = time.time()
+                    runTime = 0
+                    runTimeOut = []
+
                     for cluster in clusters:
                         #Find a route
                         print("\nRoute {}".format(i + 1))
@@ -257,8 +261,9 @@ class SchedulerUI(QWidget):
                             #GA
                             print("Using genetic algorithm")
 
-                            populationsize = 300
-                            routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed,self.windSpeed,self.windDir,populationsize)
+                            routeFinder = geneticAlgorithm.RouteFinder(cluster,self.droneSpeed,
+                                                                       self.windSpeed,self.windDir,
+                                                                       self.popSize,self.noGens)
                             route = routeFinder.run()
 
                             #for csv
@@ -271,6 +276,9 @@ class SchedulerUI(QWidget):
 
                             #for csv
                             name = "GBF" + str(len(clusters))
+
+                        runTime += round(time.time() - startTime, 2)
+                        runTimeOut.append(runTime)
 
                         #Get real length
                         realLength,realTime = self.getRealLengthTime(route)
@@ -329,16 +337,20 @@ class SchedulerUI(QWidget):
 
                     dataOut.insert(0,name)
 
-                    # OUTPUTTING TO CSV
                     import csv
+                    '''
+                    ### OUTPUTTING TO CSV TEMP HERE
                     f = open("data.csv","a")
-
                     with f:
                         w = csv.writer(f)
-                        w.writerow(dataOut)
-                        print("DATA WRITTEN")
+                        w.writerow(dataOut)'''
 
-                    print(f"----- time = {round(time.time() - startTime, 2)} seconds -----")
+                    g = open("runtimes.csv", "a")
+
+                    with g:
+                        w = csv.writer(g)
+
+                        w.writerow(runTimeOut)
 
                     print(f"Original = {self.noDrones}\nNew = {len(tempClusters)}")
                     #Assign new array to loop array
@@ -410,7 +422,9 @@ class SchedulerUI(QWidget):
 
                     if self.searchAlg == 0:
                         # GA
-                        routeFinder = geneticAlgorithm.RouteFinder(newCluster)
+                        routeFinder = geneticAlgorithm.RouteFinder(newCluster, self.droneSpeed,
+                                                                   self.windSpeed, self.windDir,
+                                                                   self.popSize, self.noGens)
                         route = routeFinder.run()
                     else:
                         # GBF
@@ -558,33 +572,26 @@ class SchedulerUI(QWidget):
         indexArray = []
         for i in range(diff):
             indexArray.append(self.times.index(sorted(self.times)[i]))
-
         #Arrange in order
         indexArray.sort()
         print("INDARRAY = ",indexArray)
-
         #Swap positions so that shortest routes are the first elements in arrays
         for i in range(len(indexArray)):
             short = indexArray[i]
             long = i
-
             #If the short index is > than the number of drones we need to swap them
             if short > self.noDrones:
                 #Find a free space in the index array that isn't a current short number
                 if long in indexArray:
                     long = self.getSpace(indexArray)
-
                 #Swap colournames, times, lengths
                 self.colourNames[long],self.colourNames[short] = self.colourNames[short],self.colourNames[long]
                 self.times[long], self.times[short] = self.times[short], self.times[long]
                 self.lengths[long], self.lengths[short] = self.lengths[short], self.lengths[long]
-
                 #Update the index array pointer
                 indexArray[i] = long
-
         indexArray.sort()
         print("INDARRAY 2 = ",indexArray)
-
         #Swap indexes for shortest so they are in the first x positions
         #Only do this when no routes > no drones
         j = 0
@@ -660,11 +667,9 @@ class SchedulerUI(QWidget):
                         <TR><TD></TD><TD>{self.colourNames[num]}</TD><TD>{self.times[num]}</TD><TD>{self.lengths[num]}</TD></TR>
                     """
                 tableStr += tableLine
-
                 count += 1
                 if count < len(indexArray):
                     j = indexArray[count]
-
             #Make sure we don't have any remainder
             if remainder > 0:
                 tableLine = f"""
@@ -686,7 +691,6 @@ class SchedulerUI(QWidget):
 
             # Build body string
             html_str = f"""
-
                     <h1>Drone Schedule</h1>
                     <h3>Number of customers: {self.noCustomers}</h3>
                     <h3>Number of drones: {self.noDrones}</h3>
@@ -694,11 +698,9 @@ class SchedulerUI(QWidget):
                     <h3>Wind Speed: {self.windSpeed}m/s</h3>
                     <h3>Wind Bearing: {self.windDir}°</h3>
                     <h3>{possible}</h3>
-
                     <p>Details of deliveries:</br>
                         {tableStr}
                     </p>
-
                     {div[0]}
             """
 
@@ -717,7 +719,6 @@ class SchedulerUI(QWidget):
                     border:1px solid black;
                     text-align:center;
                     }
-
                 </STYLE>
             """
             new_head.append(css)

@@ -52,7 +52,7 @@ ax.bar(x+0.1,GBF,width=0.2,color="b",align="center",label="Greedy Best First")
 
 plt.title("Length of time to find routes in seconds")
 plt.ylabel("Time")
-plt.xlabel("Route")
+plt.xlabel("Number of routes")
 plt.xticks(x,tupLabels)
 plt.legend()
 
