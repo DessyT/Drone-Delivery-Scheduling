@@ -2,7 +2,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-path = "data.csv"
+path = "50x150_data.csv"
 
 file = open(path,"r")
 reader = csv.reader(file)

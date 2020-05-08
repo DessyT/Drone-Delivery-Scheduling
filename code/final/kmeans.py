@@ -86,7 +86,7 @@ testDB = db.DBHandler("aberdeen.sqlite3")
 locData = testDB.getLocsTime()
 
 #Now get class and clusters
-test = KMeansClusters(locData,8)
+test = KMeansClusters(locData,15)
 clusters = test.getClusters()
 i = 0
 for cluster in clusters:
