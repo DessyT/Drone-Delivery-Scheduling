@@ -43,17 +43,14 @@ class APClusters:
         return self.clusters
 
 '''
-#Testing with DB. Need to get data first
+# Get data first
 testDB = db.DBHandler("db.sqlite3")
 locData = testDB.getLocsTime()
 
-#Now get class and clusters
+# Now get clusters
 test = APClusters(locData)
-derp = test.getClusters()
-print("DERP",derp)
+clusters = test.getClusters()
 
-for herp in derp:
-    print("HERP",herp)
-    test = geneticAlgorithm.RouteFinder(herp)
-    print(test.run())
+for cluster in clusters:
+    print("Cluster:",cluster)
 '''

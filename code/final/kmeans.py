@@ -80,22 +80,24 @@ class KMeansClusters:
         #Return
         return clusters
 
-'''
-#Testing with DB. Need to get data first
+
+# Testing the kMeans clustering algorithm
+# Get data first
 testDB = db.DBHandler("aberdeen.sqlite3")
 locData = testDB.getLocsTime()
 
-#Now get class and clusters
+# Get the clusters
 test = KMeansClusters(locData,15)
 clusters = test.getClusters()
+
+# Output each cluster
 i = 0
 for cluster in clusters:
-
-    print("Cluster:",i,cluster)
+    print(f"Cluster: {i} {cluster}")
     i += 1
-    #test = geneticAlgorithm.RouteFinder(herp)
-    #print(test.run())
 
-newLoc = testDB.getNewestItem()
-new = test.addNewToCluster(newLoc)
-print(new)'''
+# Testing add a new location once the clusters have
+# Sample new location
+newLoc = [57.0019, -2.1452, "test new location"]
+print("\nTesting new location")
+newCluster = test.addNewToCluster(newLoc)
