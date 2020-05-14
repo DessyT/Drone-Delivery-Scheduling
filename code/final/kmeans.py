@@ -80,7 +80,7 @@ class KMeansClusters:
         #Return
         return clusters
 
-
+'''
 # Testing the kMeans clustering algorithm
 # Get data first
 testDB = db.DBHandler("aberdeen.sqlite3")
@@ -101,3 +101,4 @@ for cluster in clusters:
 newLoc = [57.0019, -2.1452, "test new location"]
 print("\nTesting new location")
 newCluster = test.addNewToCluster(newLoc)
+'''

@@ -53,7 +53,7 @@ class SchedulerUI(QWidget):
         self.routes = []
 
         self.popSize = 50
-        self.noGens = 50
+        self.noGens = 150
 
         #Draw the GUI
         self.initUI()
@@ -299,7 +299,7 @@ class SchedulerUI(QWidget):
                         timeO = str(realTime)
                         dataOut.append(lengthO)
                         dataOut.append(timeO)
-      
+
 
 
 
