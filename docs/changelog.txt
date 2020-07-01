@@ -1,5 +1,0 @@
-30/9/19
-Completed Project Plan and Ethics Form
-
-2/10/19
-Selected tools to implement. Java app, github
