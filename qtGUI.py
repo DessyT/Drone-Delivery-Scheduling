@@ -29,12 +29,8 @@ class SchedulerUI(QWidget):
     def __init__(self):
         super().__init__()
 
-        dlg = depotLocationDialog()
-        if dlg.exec_():
-            print("KEK")
-
-        #Instantiate mapmaker
-        self.mapMaker = HTMLGen.MapMaker()
+        #Instantiate globals
+        self.lat,self.lon = 0,0
         self.path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
         self.dbOpenFlag = False
         self.bearingFinder = bearing.BearingFinder()
@@ -143,8 +139,6 @@ class SchedulerUI(QWidget):
         options |= QFileDialog.DontUseNativeDialog
         self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
         if self.fileName:
-            #Remove everything from existing map
-            self.mapMaker.removeEverything()
 
             #Get db object
             self.database = db.DBHandler(self.fileName+".sqlite3")
@@ -152,6 +146,27 @@ class SchedulerUI(QWidget):
             self.database.createTable()
             #Allow db operations
             self.dbOpenFlag = True
+
+            #Show depot location dialog
+            depotDialog = depotLocationDialog()
+            if depotDialog.exec_():
+
+                #Get lat and lon
+                self.lat,self.lon = depotDialog.getLatLon()
+
+                #Now cast to tuple and save to db
+                item = (self.lat,self.lon,"depot",0,"TRUE")
+                self.database.addItem(item)
+
+            #Globally declare the mapmaker
+            self.mapMaker = HTMLGen.MapMaker(self.lat,self.lon)
+
+            #Remove everything from existing map and add depot
+            self.mapMaker.removeEverything()
+            self.mapMaker.addDepot()
+
+            #Reload map
+            self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
     #Open DB button functionality
     def btnOpenDBClicked(self):
@@ -161,18 +176,28 @@ class SchedulerUI(QWidget):
         self.fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
         if self.fileName:
             #Get db object
+            print(self.fileName)
             self.database = db.DBHandler(self.fileName)
             #Create table if it doesn't exist
             self.database.createTable()
 
+            #Get depot location
+            depotLoc = self.database.getDepotLoc()
+            print(depotLoc)
+            self.lat,self.lon = depotLoc[0],depotLoc[1]
+
             #Remove everything from existing map
+            self.mapMaker = HTMLGen.MapMaker(self.lat,self.lon)
             self.mapMaker.removeEverything()
 
             #Get all data for markers and plot
             allData = self.database.getLocsItems()
+            self.mapMaker.addDepot()
             self.mapMaker.addMarkers(allData)
+
             #Allow db operations
             self.dbOpenFlag = True
+
             #Refresh the HTML to show changes
             self.view.load(QtCore.QUrl().fromLocalFile(self.path))
 
@@ -496,7 +521,7 @@ class SchedulerUI(QWidget):
     #Refresh the map
     def refreshMap(self):
         #get new mapmaker instance
-        mapMaker = HTMLGen.MapMaker()
+        mapMaker = HTMLGen.MapMaker(self.lat,self.lon)
 
         #Get all data for markers and plot
         allData = self.database.getLocsItems()
@@ -725,6 +750,31 @@ class depotLocationDialog(QDialog):
         self.setGeometry(50,50,250,250)
         self.setWindowTitle("Select depot location")
 
+        self.lblLat = QLabel("Latitude")
+        self.lblLon = QLabel("Longitude")
+        self.txtLat = QLineEdit(self)
+        self.txtLon = QLineEdit(self)
+
+        QBtn = QDialogButtonBox.Save | QDialogButtonBox.Cancel
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.grid = QGridLayout()
+        self.grid.setSpacing(2)
+        self.grid.addWidget(self.lblLat,1,0)
+        self.grid.addWidget(self.txtLat,1,1)
+        self.grid.addWidget(self.lblLon,2,0)
+        self.grid.addWidget(self.txtLon,2,1)
+        self.grid.addWidget(self.buttonBox,5,0)
+        self.setLayout(self.grid)
+
+    def getLatLon(self):
+        lat = self.txtLat.text()
+        lon = self.txtLon.text()
+
+        return lat,lon
+
 #New delivery input dialog
 class AddDialog(QDialog):
     def __init__(self):
@@ -772,7 +822,7 @@ class AddDialog(QDialog):
         lon = self.txtLon.text()
         item = self.txtItem.text()
         time = self.txtTime.text()
-        order = lat + "," + lon + "," + item + "," + time
+        order = lat + "," + lon + "," + item + "," + time + "," + 'FALSE'
 
         return order
 

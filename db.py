@@ -21,7 +21,7 @@ class DBHandler:
             lat double NOT NULL,
             lon double NOT NULL,
             item varchar(20) NOT NULL,
-            time integer NOT NULL
+            time integer NOT NULL,
             depot BOOL DEFAULT 'FALSE');"""
 
         #Save and disconnect
@@ -31,8 +31,8 @@ class DBHandler:
     def addItem(self,item):
 
         sql = """
-        INSERT INTO orders (lat,lon,item,time)
-        VALUES (?,?,?,?);"""
+        INSERT INTO orders (lat,lon,item,time,depot)
+        VALUES (?,?,?,?,?);"""
 
         self.cur.execute(sql,item)
         self.con.commit()
@@ -102,7 +102,7 @@ class DBHandler:
 
     def getNewestItem(self):
 
-        sql = "SELECT lat, lon, time FROM orders ORDER BY id DESC LIMIT 1 WHERE depot = 'FALSE'"
+        sql = "SELECT lat, lon, time FROM orders WHERE depot = 'FALSE' ORDER BY id DESC LIMIT 1 "
         self.cur.execute(sql)
         result = self.cur.fetchall()
         data = list(result[0])

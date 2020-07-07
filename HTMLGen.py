@@ -3,10 +3,10 @@ import db
 import os
 
 class MapMaker:
-    def __init__(self):
+    def __init__(self,lat,lon):
         #Create map object and allow click to get location
-        #My flat self.map = folium.Map(location = [57.151954, -2.091723], width=500, height=500, zoom_start=15)
-        self.map = folium.Map(location = [57.152910, -2.107126], width=500, height=500, zoom_start=13)
+        self.lat,self.lon = lat,lon
+        self.map = folium.Map(location=[lat,lon], width=500, height=500, zoom_start=13)
         self.map.add_child(folium.LatLngPopup())
         #self.routedPath = "html/routedMap.html"
         self.routedPath = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
@@ -17,10 +17,13 @@ class MapMaker:
         folium.PolyLine(locations = [(startLat, startLon), (endLat, endLon)],
                         line_opacity = 0.5,color=colour).add_to(self.map)
 
+    #Add depot
+    def addDepot(self):
+        folium.Marker([self.lat,self.lon],"Depot").add_to(self.map)
+        self.map.save(self.routedPath)
+
     #Add all markers
     def addMarkers(self,allData):
-
-        folium.Marker([57.152910, -2.107126],"Depot").add_to(self.map)
 
         for i in range(len(allData)):
             lat = allData[i][0]
@@ -57,7 +60,8 @@ class MapMaker:
     #Creates a blank map for when a new DB is opened or a different algorithm is used to search
     def removeEverything(self):
 
-        self.map = folium.Map(location = [57.152910, -2.107126], width=500, height=500, zoom_start=13)
+        self.map = folium.Map(location = [self.lat,self.lon], width=500, height=500, zoom_start=13)
+        self.map.add_child(folium.LatLngPopup())
         self.map.save(self.routedPath)
 
 '''
