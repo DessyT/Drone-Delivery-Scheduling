@@ -1,6 +1,7 @@
 import sqlite3
 import psutil
-
+import os
+from itertools import chain
 class DBHandler:
 
     def __init__(self,path):
@@ -20,7 +21,8 @@ class DBHandler:
             lat double NOT NULL,
             lon double NOT NULL,
             item varchar(20) NOT NULL,
-            time integer NOT NULL);"""
+            time integer NOT NULL
+            depot BOOL DEFAULT 'FALSE');"""
 
         #Save and disconnect
         self.cur.execute(sql)
@@ -35,11 +37,24 @@ class DBHandler:
         self.cur.execute(sql,item)
         self.con.commit()
 
+    #Get depot location
+    def getDepotLoc(self):
+
+        #Get data
+        sql = "SELECT lat, lon FROM orders WHERE depot = 'TRUE'"
+        self.cur.execute(sql)
+
+        #Convert to list
+        result = self.cur.fetchall()
+        latLon = list(chain(*result))
+
+        return latLon
+
     #Return all locations in a formatted list
     def getAllLocs(self):
 
         #Get data from DB
-        sql = "SELECT lat, lon FROM orders"
+        sql = "SELECT lat, lon FROM orders WHERE depot = 'FALSE'"
 
         self.cur.execute(sql)
 
@@ -58,7 +73,7 @@ class DBHandler:
 
     def getLocsItems(self):
 
-        sql = "SELECT lat, lon, item FROM orders"
+        sql = "SELECT lat, lon, item FROM orders WHERE depot = 'FALSE'"
         self.cur.execute(sql)
         result = self.cur.fetchall()
 
@@ -72,7 +87,7 @@ class DBHandler:
 
     def getLocsTime(self):
 
-        sql = "SELECT lat, lon, time FROM orders"
+        sql = "SELECT lat, lon, time FROM orders WHERE depot = 'FALSE'"
         self.cur.execute(sql)
         result = self.cur.fetchall()
 
@@ -87,7 +102,7 @@ class DBHandler:
 
     def getNewestItem(self):
 
-        sql = "SELECT lat, lon, time FROM orders ORDER BY id DESC LIMIT 1"
+        sql = "SELECT lat, lon, time FROM orders ORDER BY id DESC LIMIT 1 WHERE depot = 'FALSE'"
         self.cur.execute(sql)
         result = self.cur.fetchall()
         data = list(result[0])
@@ -96,7 +111,7 @@ class DBHandler:
 
     def getLocs(self):
 
-        sql = "SELECT lat,lon FROM orders"
+        sql = "SELECT lat,lon FROM orders WHERE depot = 'FALSE'"
         self.cur.execute(sql)
         result = self.cur.fetchall()
 
@@ -123,10 +138,11 @@ class DBHandler:
                 print(err)
         return False
 
-#test = DBHandler("db.sqlite3")
-#test.createTable()
-#item = (18.1497,22.0943,"TEST",3578311568)
-#test.addItem(item)
-#test.getAllLocs()
-#print(test.getLocsItems())
-#print(test.getLocsTime())
+"""
+path = os.path.split(os.path.abspath(__file__))[0]+r'/testAberdeen.sqlite3'
+print(path)
+test = DBHandler(path)
+print("1    ",test.getLocsItems())
+print("2    ",test.getLocsTime())
+print("3    ",test.getDepotLoc())
+"""

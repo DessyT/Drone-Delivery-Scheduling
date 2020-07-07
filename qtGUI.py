@@ -28,6 +28,11 @@ class SchedulerUI(QWidget):
 
     def __init__(self):
         super().__init__()
+
+        dlg = depotLocationDialog()
+        if dlg.exec_():
+            print("KEK")
+
         #Instantiate mapmaker
         self.mapMaker = HTMLGen.MapMaker()
         self.path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
@@ -291,6 +296,7 @@ class SchedulerUI(QWidget):
                         self.lengths.append(realLength)
                         self.times.append(realTime)
 
+                        """ Not needed, data for report writing
                         #Ouput Dict for csv
                         string = str(realLength) + ":" + str(realTime)
                         #dataOut.append(string)
@@ -299,9 +305,7 @@ class SchedulerUI(QWidget):
                         timeO = str(realTime)
                         dataOut.append(lengthO)
                         dataOut.append(timeO)
-
-
-
+                        """
 
                         #If the route is too long we split it in 2 and append to temp array
                         #After every route is found, clusters becomes temp clusters
@@ -322,7 +326,6 @@ class SchedulerUI(QWidget):
                                 tempClusters.append(supertempClusts[0])
                                 self.routes.append(route)
                                 #Just report it for now
-                                #TODO remove from map or alert customer is too far. Input validation on distance?
 
                                 #Remove from lengths and times arrays
                                 self.lengths.remove(realLength)
@@ -345,6 +348,7 @@ class SchedulerUI(QWidget):
                     if len(clusters) == len(tempClusters):
                         count = 0
 
+                    """ Not needed, just for outputting data for report writing
                     dataOut.insert(0,name)
 
                     import csv
@@ -361,7 +365,7 @@ class SchedulerUI(QWidget):
                         w = csv.writer(g)
 
                         w.writerow(runTimeOut)
-
+                    """
                     print(f"Original = {self.noDrones}\nNew = {len(tempClusters)}")
                     #Assign new array to loop array
                     clusters = tempClusters
@@ -711,6 +715,15 @@ class SchedulerUI(QWidget):
         with open("schedule.html",mode="w") as file:
             file.write(fixedHTML)
 
+class depotLocationDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    #Layout
+    def initUI(self):
+        self.setGeometry(50,50,250,250)
+        self.setWindowTitle("Select depot location")
 
 #New delivery input dialog
 class AddDialog(QDialog):
