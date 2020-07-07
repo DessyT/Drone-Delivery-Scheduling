@@ -5,8 +5,6 @@ A GUI developed using PyQt allows input of sample customer locations, drone para
 
 1 - First set up an account with darksky API at - https://darksky.net/dev
 
-2 - Create a file "config.py" in the root directory and add the line "api_key = "APIKEY"
+2 - Create a file "config.py" in the root directory and add the line "api_key = "Your_API_Key"
 
-3 - Run qtGUI with python3. Aberdeen.sqlite3 is a sample db.
-
-Locked down to only having an Aberdeen depot for the moment, this will be revised in future versions.
+3 - Run qtGUI with python3

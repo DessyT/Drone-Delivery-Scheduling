@@ -2,7 +2,7 @@ from sklearn.cluster import KMeans
 import db
 
 class KMeansClusters:
-    def __init__(self,locTimes,noClusters):
+    def __init__(self,locTimes,noClusters,depotLat,depotLon):
 
         self.coords = []
         for item in locTimes:
@@ -10,7 +10,7 @@ class KMeansClusters:
 
         self.noClusters = int(noClusters)
         self.locTimes = locTimes
-
+        self.depotLat,self.depotLon = depotLat,depotLon
 
     def getCentralNodes(self):
         return self.clusterCentreLocs
@@ -41,9 +41,9 @@ class KMeansClusters:
                     self.cluster.append(self.locTimes[j])
 
             #Append the depot if its not there already
-            if not [57.152910, -2.107126, 1578318631] in self.cluster:
+            if not [self.depotLat, self.depotLon, 0] in self.cluster:
                 #self.cluster.append([57.152910, -2.107126, 1578318631])
-                self.cluster.insert(0,[57.152910, -2.107126, 1578318631])
+                self.cluster.insert(0,[self.depotLat, self.depotLon, 0])
 
             #self.cluster.append([57.152910, -2.107126,1578318631])
             self.clusters.append(self.cluster)

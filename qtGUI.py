@@ -243,7 +243,7 @@ class SchedulerUI(QWidget):
                         self.txtNoDrones.setText("5")
 
                     #Get clusters
-                    self.clusterer = kmeans.KMeansClusters(locsTimes,self.noDrones)
+                    self.clusterer = kmeans.KMeansClusters(locsTimes,self.noDrones,self.lat,self.lon)
                     clusters = self.clusterer.getClusters()
                 else:
                     ''' Affinity Propagation '''

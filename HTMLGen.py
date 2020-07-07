@@ -25,6 +25,8 @@ class MapMaker:
     #Add all markers
     def addMarkers(self,allData):
 
+        self.addDepot()
+
         for i in range(len(allData)):
             lat = allData[i][0]
             lon = allData[i][1]
