@@ -25,19 +25,16 @@ from haversine import haversine, Unit
 
 class SchedulerUI(QWidget):
 
-
     def __init__(self):
         super().__init__()
 
-        #Instantiate globals
-        self.lat,self.lon = 0,0
+        #Instantiate classes and global variables
         self.path = os.path.split(os.path.abspath(__file__))[0]+r'/html/routedMap.html'
+        self.basePath = os.path.split(os.path.abspath(__file__))[0]+r'/html/baseMap.html'
+
         self.dbOpenFlag = False
         self.bearingFinder = bearing.BearingFinder()
         self.e6b = E6B.E6B()
-        self.weather = weatherdata.WeatherData(57.1497,-2.0943)
-        self.windDir = self.weather.getWindDirection(57.1497,-2.0943)
-        self.windSpeed = self.weather.getWindSpeed(57.1497,-2.0943)
 
         #List of colours for output
         self.colours = ['#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000','#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000']
@@ -53,13 +50,14 @@ class SchedulerUI(QWidget):
         self.times = []
         self.routes = []
 
+        #Genetic algorithm params
         self.popSize = 50
         self.noGens = 150
 
         #Draw the GUI
         self.initUI()
 
-    #Setup out main window GUI
+    #Setup out main window GUI items & layout
     def initUI(self):
 
         self.setGeometry(50,50,800,575)
@@ -69,10 +67,9 @@ class SchedulerUI(QWidget):
         self.lblIntro.setText("Welcome to your Delivery Scheduler")
         self.lblIntro.move(10,20)
 
-        basePath = os.path.split(os.path.abspath(__file__))[0]+r'/html/baseMap.html'
         self.view = QtWebEngineWidgets.QWebEngineView(self)
         self.view.setGeometry(10,50,500,500)
-        self.view.load(QtCore.QUrl().fromLocalFile(basePath))
+        self.view.load(QtCore.QUrl().fromLocalFile(self.basePath))
 
         self.btnAdd = QPushButton(self)
         self.btnAdd.setText("Add")
@@ -152,14 +149,19 @@ class SchedulerUI(QWidget):
             if depotDialog.exec_():
 
                 #Get lat and lon
-                self.lat,self.lon = depotDialog.getLatLon()
+                self.depotLat,self.depotLon = depotDialog.getLatLon()
 
                 #Now cast to tuple and save to db
-                item = (self.lat,self.lon,"depot",0,"TRUE")
+                item = (self.depotLat,self.depotLon,"depot",0,"TRUE")
                 self.database.addItem(item)
 
+                #Get weather data
+                self.weather = weatherdata.WeatherData(self.depotLat,self.depotLon)
+                self.windDir = self.weather.getWindDirection(self.depotLat,self.depotLon)
+                self.windSpeed = self.weather.getWindSpeed(self.depotLat,self.depotLon)
+
             #Globally declare the mapmaker
-            self.mapMaker = HTMLGen.MapMaker(self.lat,self.lon)
+            self.mapMaker = HTMLGen.MapMaker(self.depotLat,self.depotLon)
 
             #Remove everything from existing map and add depot
             self.mapMaker.removeEverything()
@@ -175,28 +177,32 @@ class SchedulerUI(QWidget):
         options |= QFileDialog.DontUseNativeDialog
         self.fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","sqlite3 files (*.sqlite3)", options=options)
         if self.fileName:
+
             #Get db object
-            print(self.fileName)
             self.database = db.DBHandler(self.fileName)
             #Create table if it doesn't exist
             self.database.createTable()
+            #Allow db operations
+            self.dbOpenFlag = True
 
             #Get depot location
             depotLoc = self.database.getDepotLoc()
             print(depotLoc)
-            self.lat,self.lon = depotLoc[0],depotLoc[1]
+            self.depotLat,self.depotLon = depotLoc[0],depotLoc[1]
+
+            #Get weather data
+            self.weather = weatherdata.WeatherData(self.depotLat, self.depotLon)
+            self.windDir = self.weather.getWindDirection(self.depotLat, self.depotLon)
+            self.windSpeed = self.weather.getWindSpeed(self.depotLat, self.depotLon)
 
             #Remove everything from existing map
-            self.mapMaker = HTMLGen.MapMaker(self.lat,self.lon)
+            self.mapMaker = HTMLGen.MapMaker(self.depotLat,self.depotLon)
             self.mapMaker.removeEverything()
 
             #Get all data for markers and plot
             allData = self.database.getLocsItems()
             self.mapMaker.addDepot()
             self.mapMaker.addMarkers(allData)
-
-            #Allow db operations
-            self.dbOpenFlag = True
 
             #Refresh the HTML to show changes
             self.view.load(QtCore.QUrl().fromLocalFile(self.path))
@@ -243,7 +249,7 @@ class SchedulerUI(QWidget):
                         self.txtNoDrones.setText("5")
 
                     #Get clusters
-                    self.clusterer = kmeans.KMeansClusters(locsTimes,self.noDrones,self.lat,self.lon)
+                    self.clusterer = kmeans.KMeansClusters(locsTimes,self.noDrones,self.depotLat,self.depotLon)
                     clusters = self.clusterer.getClusters()
                 else:
                     ''' Affinity Propagation '''
@@ -337,11 +343,11 @@ class SchedulerUI(QWidget):
                         if realTime > self.maxTime:
 
                             #Spaghetti code
-                            if [57.152910, -2.107126,1578318631] in cluster:
-                                cluster.remove([57.152910, -2.107126,1578318631])
+                            if [self.depotLat,self.depotLon,0] in cluster:
+                                cluster.remove([self.depotLat,self.depotLon,0])
 
                             #Split into 2 clusters
-                            tempClusterer = kmeans.KMeansClusters(cluster,2)
+                            tempClusterer = kmeans.KMeansClusters(cluster,2,self.depotLat,self.depotLon)
                             supertempClusts = tempClusterer.getClusters()
 
                             #Make sure we don't end here
@@ -450,6 +456,11 @@ class SchedulerUI(QWidget):
                 self.database.addItem(item)
                 print("Item added",item)
 
+                #Redo clustering and path finding to find new best routes
+                self.btnRunClicked()
+
+                """ #Old code - finds closest cluster an appends new customer to it.
+                    #No guarantee that routes are still optimal
                 #Now find closest cluster, get route, show on map
                 #Inside try except block in case user hasn't used run function before add
                 newLoc = self.database.getNewestItem()
@@ -473,7 +484,7 @@ class SchedulerUI(QWidget):
                     # Search location
                     searchLoc = newCluster[0][0]
                     # Don't search on the depot
-                    if searchLoc == 57.15291:
+                    if searchLoc == self.depotLat:
                         searchLoc = newCluster[1][0]
                     # Loop through all items in self.routes to find a matching location
                     # Once we find it, replace the whole route with the new one
@@ -502,7 +513,7 @@ class SchedulerUI(QWidget):
                 except AttributeError:
                     #Show item added alert
                     QMessageBox.about(self, "Success", "Item added to database\nPress run to see it on the map!")
-
+                """
     #Quit button functionality
     def btnQuitClicked(self):
         sys.exit()
@@ -521,7 +532,7 @@ class SchedulerUI(QWidget):
     #Refresh the map
     def refreshMap(self):
         #get new mapmaker instance
-        mapMaker = HTMLGen.MapMaker(self.lat,self.lon)
+        mapMaker = HTMLGen.MapMaker(self.depotLat,self.depotLon)
 
         #Get all data for markers and plot
         allData = self.database.getLocsItems()
@@ -590,12 +601,6 @@ class SchedulerUI(QWidget):
 
         return time
 
-    def getSpace(self,indexArray):
-        for plz in range(self.noDrones):
-            if plz not in indexArray:
-                long = plz
-                return long
-
     #Modify the file created by folium to include other data
     def modifyHTML(self,):
 
@@ -603,10 +608,6 @@ class SchedulerUI(QWidget):
             possible = "All customers are close enough for delivery"
         else:
             possible = "Some customers are too far away for delivery - they appear with no route line to them"
-
-        #Find positions of shortest x routes
-        #How many do we need
-
 
         tableStr = """
             <TABLE style='width:50%;'>
